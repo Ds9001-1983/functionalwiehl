@@ -1,0 +1,13 @@
+{
+  "stand": "2026-06-12T10:41:44.693Z",
+  "whatsapp": [
+    "https://api.whatsapp.com/send/?phone=492262752717&text=Hallo%2C+ich+m%C3%B6chte+das+14-Tage+Probetraining+buchen%21&type=phone_number&app_absent=0",
+    "https://wa.me/492262752717?text=Ich+m%C3%B6chte+einen+Vertrag+abschlie%C3%9Fen+oder+die+14+Tage+Probetraining+vereinbaren."
+  ],
+  "calendly": [
+    "https://calendly.com/functionalwiehl/telefontermin"
+  ],
+  "tel": [
+    "tel:+492262752717"
+  ]
+}
