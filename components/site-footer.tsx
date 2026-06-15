@@ -122,6 +122,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/barrierefreiheit/" className="hover:underline">
+                Barrierefreiheit
+              </Link>
+            </li>
+            <li>
               <ConsentRevokeButton />
             </li>
           </ul>

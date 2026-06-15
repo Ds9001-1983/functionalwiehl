@@ -22,6 +22,7 @@ export type EventPosition =
   | "header"
   | "hero"
   | "sticky_bar"
+  | "whatsapp_fab"
   | "pricecard"
   | "cta_band"
   | "footer"

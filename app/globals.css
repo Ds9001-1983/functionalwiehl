@@ -122,3 +122,45 @@
 @utility container-site {
   @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
 }
+
+/* ── Barrierefreiheits-Leiste (BFSG) — echte CSS-Modi, kein ARIA-Fake ──
+   Gesetzt über die Klassen/Attribute an <html> (components/a11y/a11y-context.tsx
+   + Inline-Script in app/layout.tsx). */
+
+/* Schriftgröße: skaliert alle rem-Größen proportional über die Root-Font-Size */
+html[data-fontscale="1"] {
+  font-size: 112.5%;
+}
+html[data-fontscale="2"] {
+  font-size: 125%;
+}
+
+/* Kontrast erhöhen: hebt v. a. den grauen Sekundärtext sicher über AA,
+   erzwingt Link-Unterstreichung und kräftigere Ränder */
+html.a11y-contrast {
+  --foreground: #15151a;
+  --muted-foreground: #2b2b30;
+  --border: #8a8a90;
+}
+html.a11y-contrast a:not([class*="rounded-pill"]):not([class*="rounded-full"]) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Animationen reduzieren (zusätzlich zur prefers-reduced-motion-Regel oben) */
+html.a11y-reduce-motion *,
+html.a11y-reduce-motion *::before,
+html.a11y-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Links hervorheben */
+html.a11y-highlight-links a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  outline: 1px dashed currentColor;
+  outline-offset: 2px;
+}

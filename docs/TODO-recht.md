@@ -37,8 +37,10 @@ Entwurf auf Basis der echten Dienste und muss juristisch geprüft werden:
 - [ ] AGB: `/geschaeftsbedingungen/` der Alt-Site ist ein generisches Template
       ohne Mitgliedschaftsbedingungen. Klären: eigene AGB-Seite nötig?
       (Redirect zeigt bis dahin auf /impressum/)
-- [ ] BFSG (seit 28.06.2025): prüfen, ob Barrierefreiheitserklärung nötig ist
-      (A11y-Ziel ≥ 95 erfüllt die Informationspflicht allein nicht)
+- [~] BFSG (seit 28.06.2025): Barrierefreiheits-Leiste (nativ) + Erklärungsseite
+      `/barrierefreiheit/` sind eingebaut (Entwurf). Offen: juristische Endprüfung
+      der Erklärung, Bestätigung der zuständigen Marktüberwachungsstelle (MLBF) +
+      Verfahrensangaben, optional vollständiger WCAG-2.1-AA-Audit (`bfsg-check`)
 - [ ] Bildlizenzen: 9 `.credits.txt` in assets/raw/ (Stock/Freepik/Pexels/KI) —
       Weiterverwendung im Redesign + Attributionspflichten prüfen
 - [ ] Foto-Einwilligungen für künftige Team-Fotos (/ueber-uns/)

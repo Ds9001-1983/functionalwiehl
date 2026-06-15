@@ -14,6 +14,7 @@ const SEITEN = [
   "/kontakt/",
   "/impressum/",
   "/datenschutz/",
+  "/barrierefreiheit/",
 ];
 
 for (const seite of SEITEN) {

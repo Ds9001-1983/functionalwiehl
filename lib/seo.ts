@@ -84,6 +84,12 @@ export const PAGES = {
     description: "Datenschutzerklärung der Functional Wiehl GmbH.",
     path: "/datenschutz/",
   },
+  barrierefreiheit: {
+    title: "Barrierefreiheit | Functional Wiehl",
+    description:
+      "Erklärung zur Barrierefreiheit der Website von Functional Wiehl nach BFSG – inklusive Hinweisen zur Bedienung und Feedback-Möglichkeit.",
+    path: "/barrierefreiheit/",
+  },
 } as const satisfies Record<string, PageSeo>;
 
 export function pageMetadata(page: PageSeo, ogImage?: string): Metadata {

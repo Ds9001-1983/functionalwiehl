@@ -36,6 +36,7 @@ const SEITEN = [
   "/gesundheits-check/",
   "/ueber-uns/",
   "/kontakt/",
+  "/barrierefreiheit/",
 ];
 
 const ERLAUBT = new Set<string>([
