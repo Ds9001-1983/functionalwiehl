@@ -2,10 +2,16 @@ import { expect, test } from "@playwright/test";
 import { CTA } from "../lib/cta";
 
 async function dismissConsent(page: import("@playwright/test").Page) {
-  // Consent-Sheet (bottom) verdeckt sonst die Toolbar/FAB unten
+  // Consent-Sheet (bottom) verdeckt sonst die Toolbar/FAB unten.
+  // Deterministisch auf das (client-seitig gemountete) Banner warten, sonst
+  // greift auf langsamen Mobile-Emulationen eine Race-Condition.
   const banner = page.getByRole("dialog", { name: "Cookie-Einstellungen" });
-  if (await banner.isVisible().catch(() => false)) {
+  try {
+    await banner.waitFor({ state: "visible", timeout: 5_000 });
     await banner.getByRole("button", { name: "Nur notwendige" }).click();
+    await banner.waitFor({ state: "hidden", timeout: 5_000 });
+  } catch {
+    /* Kein Banner (Consent bereits gesetzt) — nichts zu tun */
   }
 }
 

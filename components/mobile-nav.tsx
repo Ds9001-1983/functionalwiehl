@@ -10,8 +10,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { NAV_ITEMS } from "@/lib/nav";
 import { WhatsAppCta, CalendlyCta } from "./cta-buttons";
-import { NAV_ITEMS } from "./site-header";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);

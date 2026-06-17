@@ -77,7 +77,9 @@ test("Check-up-Quiz: kompletter Durchlauf bis zur Erfolgsmeldung", async ({ page
 
 test("Video lädt erst bei Sichtbarkeit (preload=none + IO-Autoplay)", async ({ page }) => {
   await page.goto("/");
-  const video = page.locator("video");
+  // Das lazy VideoSection-Video trägt als einziges data-inview (das Hero-Video
+  // ist ein separates, performance-optimiertes Element ohne IntersectionObserver).
+  const video = page.locator("video[data-inview]");
   await expect(video).toHaveAttribute("preload", "none");
   await video.scrollIntoViewIfNeeded();
   await expect(video).toHaveAttribute("data-inview", "true", { timeout: 10_000 });

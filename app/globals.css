@@ -7,7 +7,10 @@
 @theme {
   /* Brand-Farben Functional Wiehl (aus Live-Site extrahiert, 12.06.2026) */
   --color-brand: #2e3192; /* Indigo — Headings, Buttons, Sektionen */
+  --color-brand-dark: #232568; /* Indigo dunkler — Verlauf/Schichtung */
+  --color-brand-deep: #1a1c4d; /* Indigo am tiefsten — Footer/Hero-Boden */
   --color-cream: #fbf3d5; /* Creme — Text auf Indigo */
+  --color-sand: #f7efe0; /* warmer Sektions-Hintergrund statt kaltem Weiß */
   --color-cta: #fff3a4; /* Hellgelb — Haupt-CTA "14 TAGE kostenlos" */
   --color-cta-foreground: #503c2a; /* Braun — Text auf gelbem CTA */
   --color-footer: #545454;
@@ -15,13 +18,20 @@
 
   --radius-card: 1.75rem; /* Karten 24–34px auf der Live-Site */
   --radius-pill: 65px; /* CTA-Pill wie .et_pb_button_0_tb_header */
+
+  /* Editoriale „Headline"-Größe → Tailwind-Utility `text-headline`
+     (mobil per clamp sauber herunterskaliert). Die wuchtigere `text-display`
+     ist eine eigene @utility weiter unten (setzt auch Schrift + Gewicht). */
+  --text-headline: clamp(1.875rem, 4vw, 3.25rem);
+  --text-headline--line-height: 1.02;
+  --text-headline--letter-spacing: -0.02em;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-open-sans), system-ui, sans-serif;
-  --font-heading: var(--font-open-sans), system-ui, sans-serif;
+  --font-heading: var(--font-archivo), var(--font-open-sans), system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -105,8 +115,16 @@
   html {
     @apply font-sans scroll-smooth;
   }
+  /* h1/h2 = editoriale Display-Schrift (Archivo Black), sehr eng laufend.
+     h3/h4 bleiben Open Sans (Lesbarkeit in Karten, FAQ, Fließtext). */
   h1,
-  h2,
+  h2 {
+    @apply font-heading text-brand;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.04;
+    text-wrap: balance;
+  }
   h3,
   h4 {
     @apply font-extrabold text-brand tracking-tight;
@@ -121,6 +139,78 @@
 
 @utility container-site {
   @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+}
+
+/* ── Editoriale Bausteine ─────────────────────────────────────────── */
+
+/* Riesen-Headline (Hero) — Archivo Black, optisch wuchtig */
+@utility text-display {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+/* Eyebrow / Kicker über Headlines */
+@utility eyebrow {
+  @apply inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em];
+}
+
+/* Dezenter Verlauf für vollflächige Indigo-Sektionen → Tiefe statt Flachfarbe */
+@utility bg-brand-gradient {
+  background-image: linear-gradient(155deg, var(--color-brand) 0%, var(--color-brand-dark) 55%, var(--color-brand-deep) 100%);
+}
+
+/* Feiner Korn-/Noise-Overlay (rein dekorativ, aria-hidden via ::before) */
+@utility grain {
+  position: relative;
+}
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── Smooth-Scroll (Lenis) — minimal nötige Regeln ─────────────────── */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* ── Scroll-Reveal-Grundzustand ────────────────────────────────────
+   Nur wenn JS aktiv ist (html.js, gesetzt im Inline-Head-Script vor dem
+   ersten Paint) wird der Inhalt versteckt — so bleibt er ohne JS und bei
+   Reduced-Motion garantiert sichtbar (kein Flash, kein „verschwundener"
+   Inhalt). GSAP blendet ihn dann beim Scrollen ein. */
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  will-change: opacity, transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}
+html.a11y-reduce-motion [data-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 /* ── Barrierefreiheits-Leiste (BFSG) — echte CSS-Modi, kein ARIA-Fake ──

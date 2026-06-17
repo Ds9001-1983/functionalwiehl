@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Check } from "lucide-react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { CalendlyCta, TelCta, WhatsAppCta } from "@/components/cta-buttons";
+import { CalendlyCta, TelCta } from "@/components/cta-buttons";
 import { faqJsonLd, JsonLd } from "@/components/json-ld";
+import { Reveal } from "@/components/motion/reveal";
 import { CtaBand } from "@/components/sections/cta-band";
 import { FaqAccordion } from "@/components/sections/faq-accordion";
 import { SectionHero } from "@/components/sections/section-hero";
+import { Steps } from "@/components/sections/steps";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { FAQ_FRAUEN_50 } from "@/content/faq";
 import { PAGES, pageMetadata } from "@/lib/seo";
 
@@ -45,6 +49,7 @@ export default function FrauenAb50Page() {
         image={heroImg}
         imageAlt="Frau über 50 beim Rückentraining im Fitnessstudio"
         badge="Auf 50 Teilnehmerinnen begrenzt"
+        eyebrow="Gesundheitsstudie"
         cta={
           <>
             <CalendlyCta
@@ -59,11 +64,11 @@ export default function FrauenAb50Page() {
       />
       <Breadcrumbs name="Frauen ab 50" path={PAGES.frauenAb50.path} />
 
-      <section className="container-site py-12">
-        <div className="grid gap-8 lg:grid-cols-2">
+      <section className="container-site py-16 sm:py-20">
+        <Reveal className="grid gap-8 lg:grid-cols-2 lg:gap-14">
           <div>
-            <h2 className="text-2xl sm:text-3xl">Was ist „50 über 50“?</h2>
-            <p className="mt-3 text-muted-foreground">
+            <SectionHeading index="01" eyebrow="Die Studie" title="Was ist „50 über 50“?" />
+            <p className="mt-5 text-muted-foreground">
               Unsere Gesundheitsstudie für 50 Frauen ab 50 Jahren aus Wiehl und Umgebung: Vier
               Wochen lang trainierst du betreut und dokumentiert – und erlebst, welchen Einfluss
               regelmäßiges Training auf Gesundheit, Fitness und Wohlbefinden hat. Die Studie ist
@@ -72,13 +77,13 @@ export default function FrauenAb50Page() {
             <ul className="mt-5 space-y-2 text-sm">
               {LEISTUNGEN_STUDIE.map((l) => (
                 <li key={l} className="flex items-start gap-2">
-                  <span className="mt-1 size-1.5 shrink-0 rounded-full bg-whatsapp" aria-hidden="true" />
+                  <Check className="mt-0.5 size-4 shrink-0 text-whatsapp" aria-hidden="true" />
                   {l}
                 </li>
               ))}
             </ul>
           </div>
-          <div className="rounded-card bg-muted p-6">
+          <div className="rounded-card bg-sand p-8">
             <h3 className="text-lg">Für wen?</h3>
             <p className="mt-2 text-sm text-muted-foreground">
               Für Frauen ab 50 – ob Wiedereinsteigerin oder komplette Anfängerin. Du brauchst
@@ -94,29 +99,21 @@ export default function FrauenAb50Page() {
               <CalendlyCta position="teaser" label="Kostenlosen Telefontermin buchen" />
             </div>
           </div>
+        </Reveal>
+      </section>
+
+      <section className="bg-sand">
+        <div className="container-site py-16 sm:py-20">
+          <SectionHeading index="02" eyebrow="Ablauf" title="So läuft die Studie ab" />
+          <div className="mt-10">
+            <Steps items={ABLAUF} />
+          </div>
         </div>
       </section>
 
-      <section className="bg-muted">
-        <div className="container-site py-12">
-          <h2 className="text-2xl sm:text-3xl">So läuft die Studie ab</h2>
-          <ol className="mt-6 grid gap-4 md:grid-cols-3">
-            {ABLAUF.map((a, i) => (
-              <li key={a.titel} className="rounded-card bg-white p-6 shadow-sm">
-                <span className="flex size-10 items-center justify-center rounded-full bg-brand text-lg font-extrabold text-cream">
-                  {i + 1}
-                </span>
-                <h3 className="mt-3 text-lg">{a.titel}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{a.text}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section className="container-site py-12">
-        <h2 className="text-2xl sm:text-3xl">Warum Krafttraining ab 50 so wirksam ist</h2>
-        <div className="prose-sm mt-4 max-w-3xl space-y-4 text-muted-foreground">
+      <section className="container-site py-16 sm:py-20">
+        <SectionHeading index="03" eyebrow="Hintergrund" title="Warum Krafttraining ab 50 so wirksam ist" />
+        <div className="prose-sm mt-5 max-w-3xl space-y-4 text-muted-foreground">
           <p>
             Ab Mitte 40 verliert der Körper ohne Training jedes Jahr spürbar Muskelmasse – und mit
             ihr Kraft, Stabilität und Stoffwechselleistung. Die gute Nachricht: Dieser Prozess ist

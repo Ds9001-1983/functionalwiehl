@@ -115,13 +115,24 @@ export function TelCta({
 }
 
 /** Tarif-Button „Plan wählen" — wa.me-Vertragslink (Superchat). */
-export function PlanWaehlenCta({ label = "Plan wählen" }: { label?: string }) {
+export function PlanWaehlenCta({
+  label = "Plan wählen",
+  className,
+}: {
+  label?: string;
+  /** nur Optik (z. B. gelber Button auf dem hervorgehobenen Indigo-Tarif). */
+  className?: string;
+}) {
   return (
     <TrackedLink
       href={CTA.whatsappVertrag}
       event="whatsapp_click"
       params={{ position: "pricecard", preset: "vertrag" }}
-      className={cn(pillBase, "min-h-12 w-full bg-brand px-6 text-[15px] text-cream hover:bg-brand/90")}
+      className={cn(
+        pillBase,
+        "min-h-12 w-full bg-brand px-6 text-[15px] text-cream hover:bg-brand/90",
+        className
+      )}
     >
       {label}
     </TrackedLink>

@@ -7,6 +7,8 @@ import { FaqAccordion } from "@/components/sections/faq-accordion";
 import { FeatureGrid } from "@/components/sections/feature-grid";
 import { PriceSection } from "@/components/sections/price-section";
 import { SectionHero } from "@/components/sections/section-hero";
+import { Steps } from "@/components/sections/steps";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { FAQ_PROBETRAINING } from "@/content/faq";
 import { PAGES, pageMetadata } from "@/lib/seo";
 
@@ -39,32 +41,25 @@ export default function ProbetrainingPage() {
         image={heroImg}
         imageAlt="Training bei Functional Wiehl"
         badge="100 % kostenlos & unverbindlich"
+        eyebrow="14 Tage Probetraining"
         cta={<WhatsAppCta position="hero" size="lg" label="Jetzt 14 Tage kostenlos starten" />}
       />
       <Breadcrumbs name="Probetraining" path={PAGES.probetraining.path} />
 
-      <section className="container-site py-12">
-        <h2 className="text-2xl sm:text-3xl">So einfach geht&apos;s</h2>
-        <ol className="mt-6 grid gap-4 md:grid-cols-3">
-          {ABLAUF.map((a, i) => (
-            <li key={a.titel} className="rounded-card border border-border bg-white p-6 shadow-sm">
-              <span className="flex size-10 items-center justify-center rounded-full bg-cta text-lg font-extrabold text-cta-foreground">
-                {i + 1}
-              </span>
-              <h3 className="mt-3 text-lg">{a.titel}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{a.text}</p>
-            </li>
-          ))}
-        </ol>
+      <section className="container-site py-16 sm:py-20">
+        <SectionHeading index="01" eyebrow="In 3 Schritten" title="So einfach geht's" />
+        <div className="mt-10">
+          <Steps items={ABLAUF} />
+        </div>
         <div className="mt-8 flex justify-center">
           <WhatsAppCta position="cta_band" size="lg" label="Jetzt 14 Tage kostenlos starten" />
         </div>
       </section>
 
-      <section className="bg-muted">
-        <div className="container-site py-12">
-          <h2 className="text-2xl sm:text-3xl">Das alles ist in deinen 14 Tagen drin</h2>
-          <div className="mt-8">
+      <section className="bg-sand">
+        <div className="container-site py-16 sm:py-20">
+          <SectionHeading index="02" eyebrow="Inklusive" title="Das alles ist in deinen 14 Tagen drin" />
+          <div className="mt-10">
             <FeatureGrid compact />
           </div>
         </div>

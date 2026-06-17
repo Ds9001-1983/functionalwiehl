@@ -1,4 +1,5 @@
 import { CalendlyCta, WhatsAppCta } from "@/components/cta-buttons";
+import { Reveal } from "@/components/motion/reveal";
 
 /** Conversion-Spine: Abschluss-Band jeder Seite (Indigo, Creme-Text, gelber Pill). */
 export function CtaBand({
@@ -11,9 +12,13 @@ export function CtaBand({
   calendlyPrimary?: boolean;
 }) {
   return (
-    <section className="bg-brand">
-      <div className="container-site flex flex-col items-start gap-4 py-12 sm:items-center sm:text-center">
-        <h2 className="text-2xl text-cream sm:text-3xl">{headline}</h2>
+    <section className="grain bg-brand-gradient">
+      <Reveal className="container-site flex flex-col items-start gap-5 py-16 sm:items-center sm:py-20 sm:text-center">
+        <span className="eyebrow text-cta">
+          <span aria-hidden="true" className="h-px w-8 bg-cta/70" />
+          Jetzt starten
+        </span>
+        <h2 className="max-w-3xl text-display text-cream">{headline}</h2>
         <p className="max-w-xl text-cream/85">{text}</p>
         <div className="mt-2 flex w-full max-w-sm flex-col gap-2 sm:w-auto sm:max-w-none sm:flex-row">
           {calendlyPrimary ? (
@@ -33,7 +38,7 @@ export function CtaBand({
             </>
           )}
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }

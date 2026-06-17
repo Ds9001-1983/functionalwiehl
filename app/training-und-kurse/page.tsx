@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import Image, { type StaticImageData } from "next/image";
+import { type StaticImageData } from "next/image";
 import Link from "next/link";
+import { Check } from "lucide-react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { WhatsAppCta } from "@/components/cta-buttons";
 import { CtaBand } from "@/components/sections/cta-band";
+import { EditorialSplit } from "@/components/sections/editorial-split";
 import { FaqAccordion } from "@/components/sections/faq-accordion";
 import { SectionHero } from "@/components/sections/section-hero";
 import { FAQ_TRAINING } from "@/content/faq";
@@ -92,43 +94,41 @@ export default function TrainingUndKursePage() {
         subtitle="Sechs Trainingswelten unter einem Dach – für jedes Level und jedes Ziel."
         image={heroImg}
         imageAlt="Trainingsfläche von Functional Wiehl"
+        eyebrow="Training & Kurse"
         cta={<WhatsAppCta position="hero" size="lg" />}
       />
       <Breadcrumbs name="Training & Kurse" path={PAGES.trainingUndKurse.path} />
 
       {BEREICHE.map((b, i) => (
-        <section key={b.id} id={b.id} className="scroll-mt-20">
-          <div
-            className={`container-site grid items-center gap-8 py-12 lg:grid-cols-2 ${
-              i % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
-            }`}
-          >
-            <Image
-              src={b.image}
-              alt={b.imageAlt}
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="aspect-[4/3] w-full rounded-card object-cover"
-              placeholder="blur"
-            />
-            <div>
-              <h2 className="text-2xl sm:text-3xl">{b.titel}</h2>
-              <p className="mt-3 text-muted-foreground">{b.text}</p>
-              <ul className="mt-4 space-y-1.5 text-sm">
-                {b.punkte.map((p) => (
-                  <li key={p}>✓ {p}</li>
-                ))}
-              </ul>
-              {b.link && (
-                <Link
-                  href={b.link.href}
-                  className="mt-4 inline-block font-bold text-brand underline-offset-4 hover:underline"
-                >
-                  {b.link.label} →
-                </Link>
-              )}
-            </div>
-          </div>
-        </section>
+        <EditorialSplit
+          key={b.id}
+          id={b.id}
+          index={String(i + 1).padStart(2, "0")}
+          eyebrow="Trainingswelt"
+          title={b.titel}
+          image={b.image}
+          imageAlt={b.imageAlt}
+          reverse={i % 2 === 1}
+          muted={i % 2 === 1}
+        >
+          <p>{b.text}</p>
+          <ul className="mt-4 space-y-2 text-sm">
+            {b.punkte.map((p) => (
+              <li key={p} className="flex items-start gap-2">
+                <Check className="mt-0.5 size-4 shrink-0 text-whatsapp" aria-hidden="true" />
+                {p}
+              </li>
+            ))}
+          </ul>
+          {b.link && (
+            <Link
+              href={b.link.href}
+              className="mt-5 inline-block font-bold text-brand underline-offset-4 hover:underline"
+            >
+              {b.link.label} →
+            </Link>
+          )}
+        </EditorialSplit>
       ))}
 
       <FaqAccordion items={FAQ_TRAINING} />

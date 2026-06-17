@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { Open_Sans } from "next/font/google";
+import { Archivo, Open_Sans } from "next/font/google";
 import { A11yProvider } from "@/components/a11y/a11y-context";
 import { A11yToolbar } from "@/components/a11y/a11y-toolbar";
 import { AnalyticsScripts } from "@/components/consent/analytics-scripts";
 import { ConsentBanner } from "@/components/consent/consent-banner";
 import { ConsentProvider } from "@/components/consent/consent-context";
 import { JsonLd, ORGANIZATION_JSONLD } from "@/components/json-ld";
+import { SmoothScroll } from "@/components/motion/smooth-scroll";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StickyCtaBar } from "@/components/sticky-cta-bar";
@@ -21,6 +22,14 @@ const openSans = Open_Sans({
   variable: "--font-open-sans",
 });
 
+// Display-Schrift für editoriale Headlines (h1/h2 + große Zahlen). Variable Font,
+// ebenfalls self-gehostet via next/font (DSGVO-sauber). Open Sans bleibt Body-Font.
+const archivo = Archivo({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-archivo",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: PAGES.home.title,
@@ -34,11 +43,11 @@ export const metadata: Metadata = {
 
 // FOUC-Schutz: setzt die Barrierefreiheits-Einstellungen aus localStorage,
 // bevor der erste Paint passiert. Logik gespiegelt aus a11y-context.tsx → applyA11y.
-const A11Y_INIT = `try{var s=JSON.parse(localStorage.getItem("fw_a11y")||"{}");var e=document.documentElement;e.dataset.fontscale=String([0,1,2].includes(s.fontScale)?s.fontScale:0);e.classList.toggle("a11y-contrast",!!s.contrast);e.classList.toggle("a11y-reduce-motion",!!s.reduceMotion);e.classList.toggle("a11y-highlight-links",!!s.highlightLinks);}catch(_){}`;
+const A11Y_INIT = `try{var s=JSON.parse(localStorage.getItem("fw_a11y")||"{}");var e=document.documentElement;e.classList.add("js");e.dataset.fontscale=String([0,1,2].includes(s.fontScale)?s.fontScale:0);e.classList.toggle("a11y-contrast",!!s.contrast);e.classList.toggle("a11y-reduce-motion",!!s.reduceMotion);e.classList.toggle("a11y-highlight-links",!!s.highlightLinks);}catch(_){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de" className={openSans.variable}>
+    <html lang="de" className={`${openSans.variable} ${archivo.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: A11Y_INIT }} />
       </head>
@@ -53,9 +62,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <A11yProvider>
           <ConsentProvider>
             <SiteHeader />
-            <main id="inhalt" className="flex-1">
-              {children}
-            </main>
+            <SmoothScroll>
+              <main id="inhalt" className="flex-1">
+                {children}
+              </main>
+            </SmoothScroll>
             <SiteFooter />
             <StickyCtaBar />
             <WhatsAppFab />

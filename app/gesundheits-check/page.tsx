@@ -9,10 +9,14 @@ export const metadata: Metadata = pageMetadata(PAGES.gesundheitsCheck);
 export default function GesundheitsCheckPage() {
   return (
     <>
-      <section className="bg-brand">
-        <div className="container-site py-12">
-          <h1 className="text-3xl text-cream sm:text-4xl">Fitness- & Gesundheits-Check-up</h1>
-          <p className="mt-3 max-w-xl text-cream/90">
+      <section className="grain bg-brand-gradient">
+        <div className="container-site py-16 sm:py-20">
+          <span className="eyebrow text-cta">
+            <span aria-hidden="true" className="h-px w-8 bg-cta/70" />
+            Persönliche Empfehlung
+          </span>
+          <h1 className="mt-4 text-display text-cream">Fitness- & Gesundheits-Check-up</h1>
+          <p className="mt-5 max-w-xl text-cream/85">
             Ziele, Alltag, Gesundheit – beantworte ein paar Fragen und wir melden uns mit deiner
             persönlichen Trainingsempfehlung.
           </p>

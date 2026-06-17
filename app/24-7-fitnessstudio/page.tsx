@@ -6,6 +6,9 @@ import { CtaBand } from "@/components/sections/cta-band";
 import { FaqAccordion } from "@/components/sections/faq-accordion";
 import { GalleryGrid } from "@/components/sections/gallery-grid";
 import { SectionHero } from "@/components/sections/section-hero";
+import { Steps } from "@/components/sections/steps";
+import { Reveal } from "@/components/motion/reveal";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { FAQ_247 } from "@/content/faq";
 import { OEFFNUNGSZEITEN } from "@/lib/cta";
 import { PAGES, pageMetadata } from "@/lib/seo";
@@ -41,55 +44,51 @@ export default function Studio247Page() {
         image={heroImg}
         imageAlt="Functional Wiehl bei Abendbeleuchtung – 24/7 geöffnet"
         badge="24/7 geöffnet"
+        eyebrow="24/7-Studio"
         cta={<WhatsAppCta position="hero" size="lg" />}
       />
       <Breadcrumbs name="24/7-Studio" path={PAGES.fitnessstudio247.path} />
 
-      <section className="container-site py-12">
-        <h2 className="text-2xl sm:text-3xl">So funktioniert der 24/7-Zugang</h2>
-        <ol className="mt-6 grid gap-4 md:grid-cols-3">
-          {SCHRITTE.map((s, i) => (
-            <li key={s.titel} className="rounded-card border border-border bg-white p-6 shadow-sm">
-              <span className="flex size-10 items-center justify-center rounded-full bg-brand text-lg font-extrabold text-cream">
-                {i + 1}
-              </span>
-              <h3 className="mt-3 text-lg">{s.titel}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{s.text}</p>
-            </li>
-          ))}
-        </ol>
+      <section className="container-site py-16 sm:py-20">
+        <SectionHeading index="01" eyebrow="So funktioniert's" title="So funktioniert der 24/7-Zugang" />
+        <div className="mt-10">
+          <Steps items={SCHRITTE} />
+        </div>
       </section>
 
-      <section className="bg-muted">
-        <div className="container-site py-12">
-          <h2 className="text-2xl sm:text-3xl">Zugang vs. Betreuung</h2>
-          <p className="mt-2 max-w-2xl text-muted-foreground">
-            Trainieren kannst du immer – und zu den Betreuungszeiten ist unser Team persönlich für
-            dich da: für Einweisungen, Trainingspläne und alle Fragen.
-          </p>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-card bg-brand p-6 text-cream">
+      <section className="bg-sand">
+        <div className="container-site py-16 sm:py-20">
+          <SectionHeading
+            index="02"
+            eyebrow="Zugang & Betreuung"
+            title="Zugang vs. Betreuung"
+            description="Trainieren kannst du immer – und zu den Betreuungszeiten ist unser Team persönlich für dich da: für Einweisungen, Trainingspläne und alle Fragen."
+          />
+          <Reveal stagger className="mt-10 grid gap-4 sm:grid-cols-2">
+            <div className="grain rounded-card bg-brand-gradient p-8 text-cream">
               <h3 className="text-lg text-cream">Trainingszeiten</h3>
-              <p className="mt-2 text-3xl font-extrabold">24/7</p>
-              <p className="mt-1 text-cream/85">Immer geöffnet – auch an Sonn- und Feiertagen.</p>
+              <p className="mt-3 font-heading text-6xl font-black text-cta">24/7</p>
+              <p className="mt-2 text-cream/85">Immer geöffnet – auch an Sonn- und Feiertagen.</p>
             </div>
-            <div className="rounded-card border border-border bg-white p-6">
+            <div className="rounded-card border border-border bg-white p-8">
               <h3 className="text-lg">Betreuungszeiten</h3>
-              <ul className="mt-2 space-y-1 text-sm">
+              <ul className="mt-3 space-y-2 text-sm">
                 {OEFFNUNGSZEITEN.betreuung.map((z) => (
-                  <li key={z.tage} className="flex justify-between gap-4">
+                  <li key={z.tage} className="flex justify-between gap-4 border-b border-border/60 pb-2 last:border-0">
                     <span>{z.tage}</span>
                     <span className="font-semibold">{z.zeit}</span>
                   </li>
                 ))}
               </ul>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       <GalleryGrid
+        index="03"
         title="Dein Studio bei Nacht und Tag"
+        eyebrow="Einblicke"
         images={[
           { src: g1, alt: "Trainingsbereich von Functional Wiehl" },
           { src: g2, alt: "Geräte bei Functional Wiehl" },
@@ -97,9 +96,9 @@ export default function Studio247Page() {
         ]}
       />
 
-      <section className="container-site py-12">
-        <h2 className="text-2xl sm:text-3xl">Schnell erreichbar aus dem ganzen Oberbergischen</h2>
-        <p className="mt-3 max-w-2xl text-muted-foreground">
+      <section className="container-site py-16 sm:py-20">
+        <SectionHeading index="04" eyebrow="Anfahrt" title="Schnell erreichbar aus dem ganzen Oberbergischen" />
+        <p className="mt-4 max-w-2xl text-muted-foreground">
           Aus Oberwiehl, Bielstein, Marienhagen oder Nümbrecht bist du in wenigen Minuten bei uns.
           Kostenlose Parkplätze direkt vor der Tür, die Bushaltestelle „Wiehl Zentrum“ liegt 2
           Minuten Fußweg entfernt – und das Studio ist barrierefrei zugänglich.{" "}

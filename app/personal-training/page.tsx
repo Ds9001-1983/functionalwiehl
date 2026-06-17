@@ -5,6 +5,8 @@ import { CalendlyCta, WhatsAppCta } from "@/components/cta-buttons";
 import { CtaBand } from "@/components/sections/cta-band";
 import { FaqAccordion } from "@/components/sections/faq-accordion";
 import { SectionHero } from "@/components/sections/section-hero";
+import { Steps } from "@/components/sections/steps";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { FAQ_PERSONAL_TRAINING } from "@/content/faq";
 import { PAGES, pageMetadata } from "@/lib/seo";
 
@@ -53,6 +55,7 @@ export default function PersonalTrainingPage() {
         subtitle="Zertifizierte Trainer:innen, individueller Plan, messbare Ergebnisse."
         image={heroImg}
         imageAlt="Personal Training bei Functional Wiehl"
+        eyebrow="Personal Training"
         cta={
           <>
             <CalendlyCta position="hero" size="lg" label="Kostenloses Erstgespräch" className="bg-cta text-cta-foreground hover:brightness-95" />
@@ -62,33 +65,20 @@ export default function PersonalTrainingPage() {
       />
       <Breadcrumbs name="Personal Training" path={PAGES.personalTraining.path} />
 
-      <section className="container-site py-12">
-        <h2 className="text-2xl sm:text-3xl">Für wen ist Personal Training?</h2>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {ZIELE.map((z) => (
-            <div key={z.titel} className="rounded-card border border-border bg-white p-6 shadow-sm">
-              <h3 className="text-lg">{z.titel}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{z.text}</p>
-            </div>
-          ))}
+      <section className="container-site py-16 sm:py-20">
+        <SectionHeading index="01" eyebrow="Deine Ziele" title="Für wen ist Personal Training?" />
+        <div className="mt-10">
+          <Steps items={ZIELE} numbered={false} />
         </div>
       </section>
 
-      <section className="bg-muted">
-        <div className="container-site py-12">
-          <h2 className="text-2xl sm:text-3xl">So läuft&apos;s ab</h2>
-          <ol className="mt-6 grid gap-4 md:grid-cols-3">
-            {ABLAUF.map((a) => (
-              <li key={a.schritt} className="rounded-card bg-white p-6 shadow-sm">
-                <span className="flex size-10 items-center justify-center rounded-full bg-brand text-lg font-extrabold text-cream">
-                  {a.schritt}
-                </span>
-                <h3 className="mt-3 text-lg">{a.titel}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{a.text}</p>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-6 text-sm text-muted-foreground">
+      <section className="bg-sand">
+        <div className="container-site py-16 sm:py-20">
+          <SectionHeading index="02" eyebrow="Ablauf" title="So läuft's ab" />
+          <div className="mt-10">
+            <Steps items={ABLAUF} />
+          </div>
+          <p className="mt-8 text-sm text-muted-foreground">
             Die Körperanalyse kannst du auch vorab online vorbereiten:{" "}
             <Link href="/gesundheits-check/" className="font-bold text-brand underline-offset-4 hover:underline">
               Gesundheits-Check starten →
