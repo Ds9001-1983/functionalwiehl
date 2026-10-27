@@ -316,6 +316,20 @@ test.describe("Rahmen", () => {
     for (const z of BETREUUNGSZEITEN.zeilen) await expect(footer).toContainText(`${z.label}: ${z.wert}`);
   });
 
+  test("Vorschaubild: jede Website-Seite nennt app/opengraph-image.jpg für og:image und twitter:image", async ({
+    request,
+  }) => {
+    for (const seite of SEITEN.filter((s) => s !== "/gibt-es-nicht/")) {
+      const html = await (await request.get(seite)).text();
+      const meta = (attr: string, name: string) =>
+        html.match(new RegExp(`<meta ${attr}="${name}" content="([^"]*)"`))?.[1] ?? null;
+      expect(meta("property", "og:image"), seite).toBe("https://functional-wiehl.de/opengraph-image.jpg");
+      expect(meta("property", "og:image:width"), seite).toBe("1200");
+      expect(meta("property", "og:image:height"), seite).toBe("630");
+      expect(meta("name", "twitter:image"), seite).toBe("https://functional-wiehl.de/opengraph-image.jpg");
+    }
+  });
+
   test("404: Header und Footer, Links zu Startseite, Preisen und Kontakt", async ({ page }) => {
     const antwort = await page.goto("/gibt-es-nicht/");
     expect(antwort?.status()).toBe(404);

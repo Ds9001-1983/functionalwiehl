@@ -48,7 +48,20 @@ export const PAGES = {
   },
 } as const satisfies Record<string, PageSeo>;
 
-export function pageMetadata(page: PageSeo, ogImage?: string): Metadata {
+/**
+ * Vorschaubild aller Website-Seiten = app/opengraph-image.jpg (design-review (a)-3).
+ * Next hängt das dateibasierte Bild nur an das Root-Segment. Setzt eine Seite `openGraph`,
+ * ersetzt sie das ganze Objekt samt Bild (Doku 04-functions/generate-metadata.md, „Merging“),
+ * deshalb steht es hier ausdrücklich. twitter:image übernimmt Next aus openGraph.
+ */
+const OG_BILD = {
+  url: "/opengraph-image.jpg",
+  width: 1200,
+  height: 630,
+  alt: "Cardiobereich im Functional Wiehl mit Indoor-Bikes und Crosstrainern",
+};
+
+export function pageMetadata(page: PageSeo): Metadata {
   return {
     title: page.title,
     description: page.description,
@@ -60,7 +73,7 @@ export function pageMetadata(page: PageSeo, ogImage?: string): Metadata {
       siteName: "Functional Wiehl",
       locale: "de_DE",
       type: "website",
-      ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630 }] } : {}),
+      images: [OG_BILD],
     },
     twitter: { card: "summary_large_image" },
   };
