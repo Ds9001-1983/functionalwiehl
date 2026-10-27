@@ -65,7 +65,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <WhatsAppCta position="header" size="sm" className="hidden sm:inline-flex" />
+          <WhatsAppCta ziel="probetraining" position="header" size="sm" className="hidden sm:inline-flex" />
           <MobileNav />
         </div>
       </div>

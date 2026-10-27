@@ -25,7 +25,7 @@ export default function NotFound() {
             </Link>{" "}
             oder direkt zu deinen 14 kostenlosen Tagen:
           </p>
-          <WhatsAppCta position="cta_band" size="lg" />
+          <WhatsAppCta ziel="allgemein" position="not_found" size="lg" />
         </section>
       </main>
       <SiteFooter />

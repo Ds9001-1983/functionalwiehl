@@ -41,7 +41,7 @@ export function MobileNav() {
           ))}
         </nav>
         <div className="mt-auto flex flex-col gap-2 p-4">
-          <WhatsAppCta position="header" />
+          <WhatsAppCta ziel="probetraining" position="header" />
           <CalendlyCta position="header" variant="ghost" />
         </div>
       </SheetContent>

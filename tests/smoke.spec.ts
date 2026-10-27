@@ -90,9 +90,9 @@ test("Check-up-Quiz auf der Startseite: Durchlauf bis zur Erfolgsmeldung (Versan
 
 test("Video lädt erst bei Sichtbarkeit (preload=none + IO-Autoplay)", async ({ page }) => {
   await page.goto("/");
-  // Das lazy Studio-Video trägt als einziges data-inview (das Hero-Video ist ein separates,
+  // Das Studio-Video in #kontakt trägt data-inview (das Hero-Video ist ein separates,
   // performance-optimiertes Element ohne IntersectionObserver).
-  const video = page.locator("video[data-inview]");
+  const video = page.locator("#kontakt video[data-inview]");
   await expect(video).toHaveAttribute("preload", "none");
   await video.scrollIntoViewIfNeeded();
   await expect(video).toHaveAttribute("data-inview", "true", { timeout: 10_000 });

@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { CTA } from "@/lib/cta";
-import type { EventPosition } from "@/lib/tracking";
+import type { EventPosition, WhatsAppPreset } from "@/lib/tracking";
+import type { Tarif } from "@/content/preise";
 import { TrackedLink } from "./tracked-link";
 
 type Size = "default" | "lg" | "sm";
@@ -15,27 +16,39 @@ const sizes: Record<Size, string> = {
   lg: "min-h-13 px-8 text-base",
 };
 
+/** WhatsApp-Ziel → Konstante in lib/cta.ts (byte-genau wie live, Superchat-Automation) */
+export type WhatsAppZiel = WhatsAppPreset;
+
+const WHATSAPP: Record<WhatsAppZiel, { href: string; label: string }> = {
+  probetraining: { href: CTA.whatsappProbetraining, label: "Buche ein Probetraining" },
+  mitglied: { href: CTA.whatsappMitglied, label: "Mitglied werden" },
+  allgemein: { href: CTA.whatsappAllgemein, label: "Kontakt über WhatsApp" },
+};
+
 /**
- * Haupt-CTA „14 TAGE kostenlos" — Look der Live-Site:
- * Hellgelb #fff3a4, Text Braun #503c2a, Pill-Radius 65px.
- * Ziel: WhatsApp-Probetraining-Link (Superchat-Automation).
+ * WhatsApp-CTA im Look der Live-Site: Hellgelb #fff3a4, Text Braun #503c2a, Pill-Radius 65px.
+ * Texte wie live: Header „Buche ein Probetraining“, sonst „Mitglied werden“ bzw.
+ * „Kontakt über WhatsApp“. Das Preset fürs Tracking folgt aus dem Ziel.
  */
 export function WhatsAppCta({
+  ziel,
   position,
   size = "default",
-  label = "14 TAGE kostenlos",
+  label,
   className,
 }: {
+  ziel: WhatsAppZiel;
   position: EventPosition;
   size?: Size;
   label?: string;
   className?: string;
 }) {
+  const { href, label: standard } = WHATSAPP[ziel];
   return (
     <TrackedLink
-      href={CTA.whatsappProbetraining}
+      href={href}
       event="whatsapp_click"
-      params={{ position, preset: "probetraining" }}
+      params={{ position, preset: ziel }}
       className={cn(
         pillBase,
         sizes[size],
@@ -44,7 +57,7 @@ export function WhatsAppCta({
       )}
     >
       <WhatsAppIcon className="size-4.5 shrink-0" />
-      {label}
+      {label ?? standard}
     </TrackedLink>
   );
 }
@@ -53,7 +66,7 @@ export function WhatsAppCta({
 export function CalendlyCta({
   position,
   size = "default",
-  label = "Telefontermin vereinbaren",
+  label = "Jetzt Telefontermin vereinbaren",
   variant = "solid",
   className,
 }: {
@@ -84,57 +97,22 @@ export function CalendlyCta({
   );
 }
 
-export function TelCta({
-  position,
-  size = "default",
-  label,
-  className,
-}: {
-  position: EventPosition;
-  size?: Size;
-  label?: string;
-  className?: string;
-}) {
+/** Preiskarten-Button „Buchen“ wie live → „Mitglied werden“ (Superchat). */
+export function BuchenCta({ tarif, className }: { tarif: Tarif; className?: string }) {
   return (
     <TrackedLink
-      href={CTA.tel}
-      event="tel_click"
-      params={{ position }}
-      className={cn(
-        pillBase,
-        sizes[size],
-        "border-2 border-brand bg-white text-brand hover:bg-brand/5",
-        className
-      )}
-      aria-label={label ?? "Anrufen: 02262 752717"}
-    >
-      <PhoneIcon className="size-4.5 shrink-0" />
-      {label}
-    </TrackedLink>
-  );
-}
-
-/** Tarif-Button „Plan wählen" — wa.me-Vertragslink (Superchat). */
-export function PlanWaehlenCta({
-  label = "Plan wählen",
-  className,
-}: {
-  label?: string;
-  /** nur Optik (z. B. gelber Button auf dem hervorgehobenen Indigo-Tarif). */
-  className?: string;
-}) {
-  return (
-    <TrackedLink
-      href={CTA.whatsappVertrag}
+      href={CTA.whatsappMitglied}
       event="whatsapp_click"
       params={{ position: "pricecard", preset: "mitglied" }}
+      // sichtbarer Text steht vorn im Namen (WCAG 2.5.3), der Tarif unterscheidet die 4 Buttons
+      aria-label={`Buchen – Tarif ${tarif.name.replace(/\u00AD/g, "")}`}
       className={cn(
         pillBase,
         "min-h-12 w-full bg-brand px-6 text-[15px] text-cream hover:bg-brand/90",
         className
       )}
     >
-      {label}
+      Buchen
     </TrackedLink>
   );
 }

@@ -1,19 +1,22 @@
 import type { StaticImageData } from "next/image";
 
-import krafttrainingImg from "@/public/img/krafttraining-hero.jpg";
-import cardioImg from "@/public/img/cardio-hero.jpg";
-import personalImg from "@/public/img/muskelaufbau-hero.jpg";
-import kurseImg from "@/public/img/group-fitness-hero.jpg";
-import koerperImg from "@/public/img/img_7325.jpg";
-import ernaehrungImg from "@/public/img/abnehmen-hero.jpg";
+// Live gibt es keine Kachelbilder: eigene Studiofotos statt Stock- oder KI-Bildern (design-review E19)
+import krafttrainingImg from "@/public/img/img_4865-2.jpg";
+import cardioImg from "@/public/img/img_4942.jpg";
+import personalImg from "@/public/img/img_7325.jpg";
+import kurseImg from "@/public/img/img_4949.jpg";
+import koerperImg from "@/public/img/leistung-koerperanalyse.jpg";
+import ernaehrungImg from "@/public/img/leistung-ernaehrung.jpg";
 
-/** Die 6 Leistungs-Karten der Live-Site — Texte 1:1 übernommen, je mit Ziel-Unterseite. */
+export const LEISTUNGEN_TITEL = "Unsere Leistungen";
+export const LEISTUNGEN_UNTERTITEL = "Vielfältige Trainingsmöglichkeiten für alle Fitness-Level und Ziele";
+
+/** Die 6 Leistungs-Blurbs der Live-Startseite (#leistung) — Texte 1:1, live ohne Links. */
 export type Leistung = {
   id: string;
   titel: string;
   beschreibung: string;
   punkte: string[];
-  href: string;
   image: StaticImageData;
   imageAlt: string;
 };
@@ -25,9 +28,8 @@ export const LEISTUNGEN: Leistung[] = [
     beschreibung:
       "Grenzenlos trainieren – wann, wie und so oft du willst. Von der Freihantel-Zone bis zur Functional Area bietet dir unsere vielseitige Trainingsfläche alles, was du brauchst, um effizient jedes Fitness-Level zu meistern.",
     punkte: ["Smart-, Pin- & Plate-Loaded Kraftgeräte", "Freihantel-Area", "Functional-Area"],
-    href: "/training-und-kurse/#krafttraining",
     image: krafttrainingImg,
-    imageAlt: "Krafttraining an Geräten bei Functional Wiehl",
+    imageAlt: "Freihantel-Bereich und Plate-Loaded-Geräte bei Functional Wiehl",
   },
   {
     id: "cardio",
@@ -35,9 +37,8 @@ export const LEISTUNGEN: Leistung[] = [
     beschreibung:
       "Trainiere auf innovativen Cardio-Geräten, die deine Ausdauer pushen und die Fettverbrennung auf Hochtouren bringen.",
     punkte: ["Laufbänder", "Crosstrainer & Spinning Bikes", "Ergometer & Ruderergometer"],
-    href: "/training-und-kurse/#cardio",
     image: cardioImg,
-    imageAlt: "Cardiogeräte bei Functional Wiehl",
+    imageAlt: "Spinning Bikes und Crosstrainer im Cardiobereich",
   },
   {
     id: "personal-training",
@@ -45,18 +46,16 @@ export const LEISTUNGEN: Leistung[] = [
     beschreibung:
       "Individuelle Betreuung durch zertifizierte Trainer:innen für maximale Ergebnisse.",
     punkte: ["1:1 Betreuung", "Individuelle Trainingspläne", "Individuelle Ernährungspläne"],
-    href: "/personal-training/",
     image: personalImg,
-    imageAlt: "Personal Training bei Functional Wiehl",
+    imageAlt: "Trainerin betreut ein Mitglied beim Personal Training",
   },
   {
     id: "gruppenkurse",
     titel: "Gruppenkurse",
     beschreibung: "Motivierende Gruppenkurse für alle Fitness-Level und Interessen.",
     punkte: ["Rücken- & Mobility-Training", "Indoor Cycling", "Functional Fitness"],
-    href: "/kursplan/",
     image: kurseImg,
-    imageAlt: "Gruppenkurs bei Functional Wiehl",
+    imageAlt: "Kursraum für Gruppenkurse bei Functional Wiehl",
   },
   {
     id: "koerperanalyse",
@@ -64,17 +63,15 @@ export const LEISTUNGEN: Leistung[] = [
     beschreibung:
       "Professionelle Körperanalyse und Fortschrittsmessung für optimale Ergebnisse.",
     punkte: ["Infrarot-Body-Scan", "Körpermaße Check", "Fortschrittsmessung"],
-    href: "/training-und-kurse/#koerperanalyse",
     image: koerperImg,
-    imageAlt: "Körperanalyse bei Functional Wiehl",
+    imageAlt: "Tablet mit Polar-Herzfrequenzanzeige zur Fortschrittsmessung",
   },
   {
     id: "ernaehrung",
     titel: "Ernährungs Coaching",
     beschreibung: "Professionelle Begleitung bei Muskelaufbau oder Gewichtsreduktion.",
     punkte: ["BodyMed", "Supplements", "Individuelle Beratung"],
-    href: "/training-und-kurse/#ernaehrung",
     image: ernaehrungImg,
-    imageAlt: "Ernährungsberatung bei Functional Wiehl",
+    imageAlt: "Supplements für die Ernährungsberatung im Studio",
   },
 ];
