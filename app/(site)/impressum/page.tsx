@@ -39,7 +39,7 @@ export default function ImpressumPage() {
           <p className="mt-3">
             Telefon: {KONTAKT.telefonAnzeige}
             <br />
-            E-Mail: {KONTAKT.mail}
+            E-Mail: {KONTAKT.mailRecht}
           </p>
         </div>
 

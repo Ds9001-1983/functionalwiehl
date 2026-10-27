@@ -32,7 +32,7 @@ export default function DatenschutzPage() {
           <p className="mt-3">
             {KONTAKT.firma}, {KONTAKT.strasse}, {KONTAKT.plzOrt}
             <br />
-            Telefon: {KONTAKT.telefonAnzeige} · E-Mail: {KONTAKT.mail}
+            Telefon: {KONTAKT.telefonAnzeige} · E-Mail: {KONTAKT.mailRecht}
           </p>
         </div>
 
@@ -99,7 +99,7 @@ export default function DatenschutzPage() {
             ausdrücklichen Einwilligung (Art. 9 Abs. 2 lit. a DSGVO), die du im Formular separat
             erteilst. Die Angaben nutzen wir nur zur Erstellung deiner Trainingsempfehlung und
             zur Kontaktaufnahme; eine Weitergabe an Dritte erfolgt nicht. Du kannst deine
-            Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen ({KONTAKT.mail}).
+            Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen ({KONTAKT.mailRecht}).
           </p>
         </div>
 
