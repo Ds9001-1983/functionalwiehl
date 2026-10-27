@@ -121,14 +121,15 @@ P0 Fundament → Worktrees parallel → Merge **P2 → P3 → P1**, je Rebase au
 
 ## Schritt 4 – Umschalten (nachts, frühestens 24 h nach der TTL-Senkung, Chrome nur mit OK)
 
-**Vorbedingungen:** TTL seit ≥ 24 h auf 300 (K: dig) · Freigabe C · Preview-Prüfungen grün · Code-Liste für die Migration liegt vor (D, außerhalb des Repos).
+**Vorbedingungen:** TTL seit ≥ 24 h auf 300 (K: dig) · Freigabe C · Preview-Prüfungen grün · Code-Liste für die Migration liegt vor (K zieht nur die Spalte `code` aus der n8n Data Table `7ArobN9NrAvRU6tT` per n8n-MCP, lesend, Datei außerhalb des Repos; Entscheidung Dennis 27.10.: n8n-Tabelle statt DB-Vollexport).
 
 1. [ ] D: `NEXT_PUBLIC_ALLOW_INDEXING=true` und `NEXT_PUBLIC_SITE_URL` in Production setzen, **Production-Deploy**.
    - K prüft auf der Production-URL `*.vercel.app`: weiterhin `x-robots-tag: noindex` (Regel nach Host), Klickspeicher-Testcode POST/GET wie oben, danach Testcode löschen.
 2. [ ] K (Freigabe D): **Migrationslauf 1** `npm run bn:migrate -- --codes <Datei>` (ohne IP-Pinning).
 3. [ ] DNS bei Alfahosting (D oder K per Chrome nach OK):
-   - `@` A → Vercel-IP aus dem Dashboard
-   - `www`: A löschen, CNAME → projektspezifischer Vercel-Host
+   - `@` A 109.237.132.28 → **zwei** A-Records `216.150.1.1` und `216.150.16.1` (Vercel-Empfehlung Rang 1, Stand 27.10.; Rang 2 wäre `76.76.21.21`)
+   - `www`: A 109.237.132.28 löschen (seit 27.10. eigener Eintrag mit TTL 300), CNAME → `fbddb5fbb4f53f2c.vercel-dns-017.com`
+   - `app.` (Fitness-App bei Hetzner) und `rm01`/`rm._domainkey` (Rapidmail) ebenfalls nicht anfassen
    - SPF `v=spf1 a mx include:secure-mailgate.com ~all` → `v=spf1 ip4:109.237.132.28 mx include:secure-mailgate.com ~all` (nur **ein** SPF-Eintrag; `a` zeigte sonst auf Vercel)
    - **Nicht anfassen:** NS, MX, `mail`, DKIM, DMARC, Google-TXT, FB-TXT, Wildcard
 4. [ ] K: `dig +short functional-wiehl.de A @1.1.1.1` (ebenso `@8.8.8.8`, `@9.9.9.9`, `@cns1.alfahosting.info`), Zertifikat in Vercel abwarten, dann
@@ -197,4 +198,4 @@ ebenfalls nicht an. `ALERT_TO` prüft bisher nur `check:smtp`, das Instagram-Pak
 - Hinweis: Der Pixel läuft auf der LP ohne Einwilligung (Entscheidung Dennis, Risiko § 25 TDDDG bewusst getragen, endet mit der LP)
 - nicht blockierend: C8 BFSG-Kennzahlen, C12 alte WordPress-Einsendungen
 
-**Dennis:** Code-Liste für die Migration (Vollexport der WP-DB, letzte 60 Tage), Umschalt-Nacht festlegen.
+**Dennis:** Umschalt-Nacht festlegen (frühestens 28./29.10., TTL 300 seit 27.10. 12:50). Die Code-Liste zieht K aus der n8n-Tabelle (siehe Schritt 4).
