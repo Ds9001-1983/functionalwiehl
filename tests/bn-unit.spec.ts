@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
 import { expect, test } from "@playwright/test";
+import { GET as klickGet } from "../app/wp-json/sb-bn/v1/click/[code]/route";
 import { BN_CODE_REGEX, BN_CODE_ZEICHEN } from "../lib/cta";
 import {
   BN_CODE_PFAD_RE,
@@ -26,7 +27,8 @@ import wpFehler from "./fixtures/wp-rest-fehler.json";
 /**
  * Unit-Tests des Klickspeichers (ohne Browser und ohne Server):
  * lib/black-november/klickspeicher.ts (Regex, Parser, Ablauf, Speicher) und
- * lib/black-november/klickspeicher-server.ts (Env, Basic Auth).
+ * lib/black-november/klickspeicher-server.ts (Env, Basic Auth), dazu der GET-Handler direkt
+ * für das Log der Fehltreffer. HTTP-Vertrag: tests/klickspeicher.spec.ts.
  */
 test.skip(({ isMobile }) => isMobile, "Unit-Tests, einmal genügt");
 
@@ -313,5 +315,41 @@ test.describe("Speicher", () => {
       { cwd: wurzel }
     );
     expect(stdout.trim()).toBe(`function ${BN_CODE_REGEX.source}`);
+  });
+});
+
+test.describe("GET-Handler direkt (Log)", () => {
+  const env = {
+    BN_CLICK_STORE: "memory",
+    BN_CLICK_USER: "unit",
+    BN_CLICK_PASS: "unit pass",
+    BN_CLICK_DELETE_AT: "2026-12-10T00:00:00+01:00",
+    VERCEL: undefined,
+    VERCEL_ENV: undefined,
+  };
+  const aufruf = (code: string, authorization?: string) =>
+    klickGet(
+      new Request(`http://localhost/wp-json/sb-bn/v1/click/${code}`, { headers: authorization ? { authorization } : {} }),
+      { params: Promise.resolve({ code }) }
+    );
+
+  test("Fehltreffer loggt nur „[bn-click] miss <CODE>“, 401 ohne Zugangsdaten im Log", async () => {
+    await mitEnv(env, async () => {
+      const logs: string[] = [];
+      const warn = console.warn;
+      console.warn = (...teile: unknown[]) => logs.push(teile.map(String).join(" "));
+      try {
+        const miss = await aufruf("bn-zz2z", `Basic ${Buffer.from("unit:unitpass").toString("base64")}`);
+        expect(miss.status).toBe(200);
+        expect(await miss.json()).toEqual({ found: false });
+
+        const ohne = await aufruf("BN-ZZ2Z", `Basic ${Buffer.from("unit:geheim-falsch").toString("base64")}`);
+        expect(ohne.status).toBe(401);
+      } finally {
+        console.warn = warn;
+      }
+      expect(logs).toEqual(["[bn-click] miss BN-ZZ2Z", "[bn-click] 401 mit falscher Basic Auth"]);
+      expect(logs.join("\n")).not.toContain("geheim-falsch");
+    });
   });
 });
