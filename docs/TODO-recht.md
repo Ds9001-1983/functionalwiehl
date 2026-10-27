@@ -94,9 +94,11 @@ Quellen: `app/(site)/impressum/page.tsx`, `app/(site)/datenschutz/page.tsx`,
 - [ ] **Betrieb:** `vercel.json` mit `regions:["fra1"]` (sonst stimmt „Region Frankfurt am Main“
       für die Server-Funktionen nicht), Upstash in Frankfurt, kein Log-Drain (sonst stimmt die
       Log-Frist von 30 Tagen nicht; Vercel Pro hält Runtime-Logs 1 Tag, mit Observability Plus 30).
-- [ ] **Instagram:** Der Abschnitt beschreibt den Endstand mit API, Vercel Blob und Upstash. Bis zum
-      Instagram-Paket liegen die drei Fallback-Bilder als statische Dateien im Deployment; ein
-      Datenfluss an Meta beim Seitenbesuch entsteht in beiden Fällen nicht.
+      „Spätestens nach 30 Tagen“ ist eine Obergrenze und stimmt auch bei 1 Tag (Prüfbefund 27.10.).
+- [ ] **Instagram:** Der Abschnitt beschreibt seit 27.10.2026 beide Stände: „Derzeit“ die drei
+      Fallback-Bilder als Dateien im Deployment bei Vercel, „Sobald“ den Endstand mit API, Vercel Blob
+      und Upstash (PLAN.md). Ein Datenfluss an Meta beim Seitenbesuch entsteht in beiden Fällen nicht.
+      Mit dem Instagram-Paket den Satz „Derzeit …“ streichen und „Sobald …“ in die Gegenwart setzen.
 - [ ] **GA4:** Aufbewahrungsdauer der Ereignisdaten im Property (2 oder 14 Monate) nachsehen und in
       der DSE ergänzen. Hängt am Container `GT-NMDMXSTT` ein Google-Ads-Konto, den Abschnitt erweitern.
 - [ ] **n8n:** Serverstandort und Unterauftragsverarbeiter von n8n bei SUPERBRAND benennen (Abschnitt

@@ -656,13 +656,16 @@ export default function DatenschutzPage() {
           <Abschnitt id="instagramFeed">
             <p>
               Im Bereich „Aktuelles“ zeigen wir die neuesten Beiträge unseres Instagram-Kontos
-              @functionalwiehl. Diese Beiträge ruft unser Server selbst über die Schnittstelle der{" "}
-              {ANBIETER.meta} ab; dabei werden nur Daten unseres eigenen Kontos übertragen. Die
-              Vorschaubilder speichern wir im Speicherdienst Vercel Blob, Link, Datum und Beschreibung der
-              Beiträge in der Datenbank der {ANBIETER.upstash}, jeweils in der Region Frankfurt am Main.
+              @functionalwiehl. Derzeit liegen die Vorschaubilder als Dateien unserer Website bei
+              unserem Hoster Vercel. Sobald wir die Beiträge automatisch übernehmen, ruft unser Server sie
+              selbst über die Schnittstelle der {ANBIETER.meta} ab; dabei werden nur Daten unseres
+              eigenen Kontos übertragen. Die Vorschaubilder speichern wir dann im Speicherdienst Vercel
+              Blob, Link, Datum und Beschreibung der Beiträge in der Datenbank der {ANBIETER.upstash},
+              jeweils in der Region Frankfurt am Main.
             </p>
             <p>
-              Beim Besuch unserer Website lädt Ihr Browser die Beiträge deshalb von unserem Hoster Vercel.
+              Beim Besuch unserer Website lädt Ihr Browser die Beiträge in beiden Fällen von unserem
+              Hoster Vercel.
               Eine Verbindung zu Instagram oder Meta entsteht dabei nicht, und Meta setzt keine Cookies.
               Erst wenn Sie einen Beitrag oder unser Profil anklicken, wechseln Sie zu Instagram; dann gilt
               die Datenschutzrichtlinie von Instagram. Rechtsgrundlage für die Darstellung ist Art. 6 Abs.
