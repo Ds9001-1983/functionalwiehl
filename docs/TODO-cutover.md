@@ -111,6 +111,12 @@ P0 Fundament → Worktrees parallel → Merge **P2 → P3 → P1**, je Rebase au
 - [ ] Automatische Events und automatischer erweiterter Abgleich aktiv? Beides kann Contact verwässern bzw. Formulareingaben erfassen → abschalten (Schreibaktion: D).
 - [ ] „Conversions API mit Meta“ aktiv? Hängt am Container `GT-NMDMXSTT` ein Google-Ads-Konto?
 
+**In GA4 prüfen** (lesend, D)
+- [ ] Datenstream → Erweiterte Messung → Seitenaufrufe: Ist „Seitenwechsel anhand von Browserverlaufsereignissen“
+      an? Dann zählt GA4 jede Client-Navigation doppelt, weil `trackPageview()` (`lib/tracking.ts`) selbst ein
+      `page_view` sendet. Entweder die Option abschalten (Schreibaktion: D) oder K entfernt das manuelle
+      `page_view` für GA4 (der Pixel braucht seins weiter, `disablePushState`).
+
 **Gate vor Schritt 4:** C gibt Impressum, Datenschutz und Barrierefreiheit frei (offene Punkte unten).
 
 ## Schritt 4 – Umschalten (nachts, frühestens 24 h nach der TTL-Senkung, Chrome nur mit OK)
