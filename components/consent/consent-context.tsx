@@ -1,32 +1,25 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { CONSENT_COOKIE, readConsentCookie, type Consent } from "@/lib/consent-cookie";
 
-export type Consent = {
-  statistik: boolean;
-  marketing: boolean;
-  ts: string;
-};
+export type { Consent } from "@/lib/consent-cookie";
 
-const COOKIE_NAME = "fw_consent";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 12 Monate
 
-function readConsentCookie(): Consent | null {
-  if (typeof document === "undefined") return null;
-  const raw = document.cookie
+/** Cookies von Pixel (_fbp, _fbc) und GA4 (_ga, _ga_*) für Host und Hauptdomain löschen */
+function trackerCookiesLoeschen() {
+  const namen = document.cookie
     .split("; ")
-    .find((c) => c.startsWith(`${COOKIE_NAME}=`))
-    ?.slice(COOKIE_NAME.length + 1);
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(decodeURIComponent(raw));
-    if (typeof parsed.statistik === "boolean" && typeof parsed.marketing === "boolean") {
-      return parsed;
+    .map((c) => c.split("=")[0])
+    .filter((n) => n === "_fbp" || n === "_fbc" || n === "_ga" || n.startsWith("_ga_"));
+  const host = window.location.hostname;
+  const domains = ["", host, `.${host.split(".").slice(-2).join(".")}`];
+  for (const name of namen) {
+    for (const domain of domains) {
+      document.cookie = `${name}=; Max-Age=0; path=/${domain ? `; domain=${domain}` : ""}`;
     }
-  } catch {
-    // defektes Cookie → wie "keine Entscheidung" behandeln
   }
-  return null;
 }
 
 type ConsentContextValue = {
@@ -47,7 +40,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
   const [bannerOpen, setBannerOpen] = useState(false);
 
   useEffect(() => {
-    const stored = readConsentCookie();
+    const stored = readConsentCookie(CONSENT_COOKIE);
     // Bewusst erst nach der Hydration: Server und erster Client-Render zeigen denselben Stand (loading).
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setConsent(stored);
@@ -55,14 +48,26 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  const save = useCallback((choice: Pick<Consent, "statistik" | "marketing">) => {
-    const value: Consent = { ...choice, ts: new Date().toISOString() };
-    document.cookie = `${COOKIE_NAME}=${encodeURIComponent(
-      JSON.stringify(value)
-    )}; max-age=${COOKIE_MAX_AGE}; path=/; SameSite=Lax`;
-    setConsent(value);
-    setBannerOpen(false);
-  }, []);
+  const save = useCallback(
+    (choice: Pick<Consent, "statistik" | "marketing">) => {
+      const value: Consent = { ...choice, ts: new Date().toISOString() };
+      document.cookie = `${CONSENT_COOKIE}=${encodeURIComponent(
+        JSON.stringify(value)
+      )}; max-age=${COOKIE_MAX_AGE}; path=/; SameSite=Lax`;
+
+      // Widerruf: geladene Tracker lassen sich nicht entladen → Cookies löschen und neu laden,
+      // dann startet nur noch, was erlaubt ist.
+      const entzogen = (consent?.statistik && !choice.statistik) || (consent?.marketing && !choice.marketing);
+      if (entzogen) {
+        trackerCookiesLoeschen();
+        window.location.reload();
+        return;
+      }
+      setConsent(value);
+      setBannerOpen(false);
+    },
+    [consent]
+  );
 
   const openBanner = useCallback(() => setBannerOpen(true), []);
 

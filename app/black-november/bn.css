@@ -1,0 +1,78 @@
+/*
+ * Black-November-LP: Regeln, die sich nicht sinnvoll als Utility schreiben lassen.
+ * Alles hängt an .bn-lp, damit nichts auf die Website durchschlägt (LP liegt außerhalb von app/(site)).
+ * Farben und Maße 1:1 aus dem Inline-Stylesheet in bn.html (27.10.2026).
+ */
+
+/* Grundwerte unter .bn-lp in der Base-Ebene, damit die Utilities an den Elementen gewinnen.
+   Live wirkt Divi (style-static 4.27.9) mit: Grundschrift 14px/500, Überschriften 500 mit
+   line-height 1em und 10px Innenabstand unten, Absätze 1em unten (der letzte je Ebene ohne).
+   Das überschreibt auch die Website-Regeln für h1–h3 aus globals.css (Archivo, Indigo, balance). */
+@layer base {
+  .bn-lp h1,
+  .bn-lp h2,
+  .bn-lp h3 {
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1em;
+    letter-spacing: normal;
+    color: #333;
+    padding-bottom: 10px;
+    text-wrap: wrap;
+  }
+  .bn-lp p {
+    padding-bottom: 1em;
+  }
+  .bn-lp p:last-of-type {
+    padding-bottom: 0;
+  }
+  .bn-lp strong {
+    font-weight: 700;
+  }
+  .bn-lp :is(a, button, summary):focus-visible {
+    outline: 3px solid var(--color-bn-gelb);
+    outline-offset: 3px;
+  }
+}
+
+/* Dunkler Seitenhintergrund auch beim Überscrollen (live: body.bn-lp) */
+body:has(.bn-lp) {
+  background: var(--color-bn-ink);
+}
+
+/* Schritte: Zähler im schwarzen Kreis */
+.bn-lp .bn-schritte {
+  counter-reset: s;
+}
+.bn-lp .bn-schritte > li {
+  counter-increment: s;
+}
+.bn-lp .bn-schritte > li::before {
+  content: counter(s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-bn-ink);
+  color: var(--color-bn-gelb);
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+/* FAQ: eigenes +/– statt Dreieck */
+.bn-lp .bn-faq summary::-webkit-details-marker {
+  display: none;
+}
+.bn-lp .bn-faq summary::after {
+  content: "+";
+  position: absolute;
+  right: 4px;
+  top: 10px;
+  font-size: 26px;
+  font-weight: 400;
+}
+.bn-lp .bn-faq details[open] summary::after {
+  content: "–";
+}

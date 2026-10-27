@@ -7,6 +7,7 @@ import {
   whatsappBlackNovember,
 } from "../lib/cta";
 import fixture from "./fixtures/live-ctas.json";
+import { trackerAbfangen, whatsappAbfangen } from "./helpers/meta-recorder";
 
 /**
  * DER kritischste Test des Projekts: Die Superchat-Automation des Kunden
@@ -62,8 +63,7 @@ test.describe("CTA-Konstanten gegen Live-Fixture", () => {
   });
 });
 
-// P2a ergänzt "/black-november/" (BN-Links dort per Regex auf Präfix + Code).
-const SEITEN = ["/", "/koerpermasse/", "/impressum/", "/datenschutz/", "/barrierefreiheit/"];
+const SEITEN = ["/", "/koerpermasse/", "/impressum/", "/datenschutz/", "/barrierefreiheit/", "/black-november/"];
 
 const ERLAUBT = new Set<string>([
   CTA.whatsappProbetraining,
@@ -76,8 +76,16 @@ const ERLAUBT = new Set<string>([
   CTA.mailRecht,
 ]);
 
+// BN-LP: CTAs sind Buttons, der Link entsteht erst beim Klick aus Präfix + Aktionscode
+const BN_LINK = new RegExp(
+  "^" + CTA.whatsappBlackNovemberPrefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "BN-[A-HJ-NP-Z2-9]{4}$"
+);
+
 for (const seite of SEITEN) {
-  test(`gerenderte CTAs auf ${seite} matchen lib/cta.ts exakt`, async ({ page }) => {
+  test(`gerenderte CTAs auf ${seite} matchen lib/cta.ts exakt`, async ({ page, context }) => {
+    // Die BN-LP lädt den Pixel ohne Einwilligung: nie echte Events aus der Abnahme senden
+    await trackerAbfangen(context);
+    const wa = await whatsappAbfangen(context);
     await page.goto(seite);
     const hrefs = await page
       .locator(
@@ -88,6 +96,27 @@ for (const seite of SEITEN) {
     expect(hrefs.length).toBeGreaterThan(0);
     for (const href of hrefs) {
       expect(ERLAUBT, `Unbekannte CTA-URL auf ${seite}: ${href}`).toContain(href!);
+    }
+
+    if (seite === "/black-november/") {
+      // noscript-Link (bei aktivem JS steht <noscript> als Text im DOM)
+      const noscript = await page
+        .locator("noscript")
+        .evaluateAll((els) =>
+          els.flatMap((el) =>
+            [...new DOMParser().parseFromString(el.textContent ?? "", "text/html").querySelectorAll("a[href]")].map((a) =>
+              a.getAttribute("href")
+            )
+          )
+        );
+      expect(noscript).toEqual([CTA.whatsappBlackNovemberNoscript]);
+      // erzeugter Link beim Klick auf den Hero-CTA
+      const code = await page.evaluate(() => sessionStorage.getItem("bn_code") ?? "");
+      await page.locator('[data-bn-cta="hero"]').evaluate((el) => el.scrollIntoView({ block: "start" }));
+      await page.locator('[data-bn-cta="hero"]').click();
+      await expect.poll(() => wa.length).toBeGreaterThan(0);
+      expect(wa[0].url).toMatch(BN_LINK);
+      expect(wa[0].url).toBe(whatsappBlackNovember(code));
     }
   });
 }
