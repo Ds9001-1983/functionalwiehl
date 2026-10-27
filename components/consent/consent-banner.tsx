@@ -1,23 +1,41 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { useConsent } from "./consent-context";
+
+const DATENSCHUTZ = "/datenschutz/";
 
 /**
  * Schlanker Eigenbau statt CMP-SaaS (kein TCF nötig, nur 2 Empfänger).
  * Bottom-Sheet als Overlay → kein CLS. Hard-Gating: GA4/Pixel laden erst
- * nach Opt-in (analytics-scripts.tsx).
+ * nach Opt-in (analytics-scripts.tsx). Ausnahme BN-LP: Pixel ohne Einwilligung
+ * (Entscheidung Dennis), deshalb dort ein zusätzlicher Hinweis.
+ * Liegt im Root-Layout und erscheint auch auf der LP.
  */
 export function ConsentBanner() {
-  const { bannerOpen, loading, save } = useConsent();
+  const { consent, bannerOpen, loading, save } = useConsent();
+  const pathname = usePathname();
   const [detail, setDetail] = useState(false);
-  const [statistik, setStatistik] = useState(true);
-  const [marketing, setMarketing] = useState(true);
+  // Opt-in heißt: nichts vorangekreuzt (EuGH Planet49). Beim erneuten Öffnen zeigen die
+  // Häkchen die gespeicherte Entscheidung (siehe „Einstellungen“).
+  const [statistik, setStatistik] = useState(false);
+  const [marketing, setMarketing] = useState(false);
 
   if (loading || !bannerOpen) return null;
+
+  const speichern = (choice: { statistik: boolean; marketing: boolean }) => {
+    setDetail(false);
+    save(choice);
+  };
+  const einstellungenZeigen = () => {
+    setStatistik(consent?.statistik ?? false);
+    setMarketing(consent?.marketing ?? false);
+    setDetail(true);
+  };
 
   return (
     <div
@@ -33,11 +51,18 @@ export function ConsentBanner() {
             Wir nutzen Cookies, um zu verstehen, wie unsere Website genutzt wird (Statistik), und
             um unsere Werbung zu verbessern (Marketing). Du entscheidest – Training geht auch ohne
             Cookies. Details in der{" "}
-            <Link href="/datenschutz/" className="underline">
+            {/* normales <a>: Dokumentgrenze, damit der LP-Pixel nicht per Client-Navigation mitwandert */}
+            <a href={DATENSCHUTZ} className="underline">
               Datenschutzerklärung
-            </Link>
+            </a>
             .
           </p>
+          {pathname.startsWith("/black-november") && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Auf dieser Aktionsseite messen wir den Erfolg unserer Anzeige mit dem Meta-Pixel auch
+              ohne deine Einwilligung. Details in der Datenschutzerklärung.
+            </p>
+          )}
         </div>
 
         {detail && (
@@ -86,14 +111,14 @@ export function ConsentBanner() {
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Button
-            onClick={() => save({ statistik: true, marketing: true })}
+            onClick={() => speichern({ statistik: true, marketing: true })}
             className="rounded-pill bg-brand font-bold text-cream hover:bg-brand/90"
           >
             Alle akzeptieren
           </Button>
           <Button
             variant="outline"
-            onClick={() => save({ statistik: false, marketing: false })}
+            onClick={() => speichern({ statistik: false, marketing: false })}
             className="rounded-pill"
           >
             Nur notwendige
@@ -101,13 +126,13 @@ export function ConsentBanner() {
           {detail ? (
             <Button
               variant="ghost"
-              onClick={() => save({ statistik, marketing })}
+              onClick={() => speichern({ statistik, marketing })}
               className="rounded-pill"
             >
               Auswahl speichern
             </Button>
           ) : (
-            <Button variant="ghost" onClick={() => setDetail(true)} className="rounded-pill">
+            <Button variant="ghost" onClick={einstellungenZeigen} className="rounded-pill">
               Einstellungen
             </Button>
           )}
@@ -118,10 +143,10 @@ export function ConsentBanner() {
 }
 
 /** Footer-Link „Cookie-Einstellungen" — Widerruf jederzeit möglich (TTDSG). */
-export function ConsentRevokeButton() {
+export function ConsentRevokeButton({ className }: { className?: string }) {
   const { openBanner } = useConsent();
   return (
-    <button type="button" onClick={openBanner} className="underline-offset-2 hover:underline">
+    <button type="button" onClick={openBanner} className={cn("underline-offset-2 hover:underline", className)}>
       Cookie-Einstellungen
     </button>
   );
