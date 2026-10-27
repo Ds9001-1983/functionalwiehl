@@ -44,6 +44,11 @@ test("Einstellungen: Statistik und Marketing sind nicht vorangekreuzt", async ({
   await expect(page.locator("#consent-marketing")).not.toBeChecked();
   await expect(page.locator("#consent-notwendig")).toBeChecked();
   await expect(page.locator("#consent-notwendig")).toBeDisabled();
+  // Informierte Einwilligung: GA4 setzt Cookies (pseudonym, nicht anonym), der Pixel dient auch
+  // der gezielten Ausspielung (wie in der DSE)
+  await expect(banner(page)).not.toContainText("Anonym");
+  await expect(banner(page)).toContainText("Pseudonyme Auswertung der Seitennutzung mit Cookies");
+  await expect(banner(page)).toContainText("Erfolgsmessung und gezielte Ausspielung unserer Anzeigen");
 });
 
 test("nach 'Alle akzeptieren': GA4 + Pixel laden, Banner verschwindet", async ({ page }) => {

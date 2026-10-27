@@ -35,7 +35,7 @@ async function quizOeffnen(page: Page, consent: "notwendig" | "statistik" = "not
     // Seit dem Opt-in ohne Häkchen (P2a) ist nichts vorausgewählt: Statistik an, Marketing aus
     await banner.getByRole("button", { name: "Einstellungen" }).click();
     await banner.getByLabel("Statistik (Google Analytics)").check();
-    await banner.getByLabel("Marketing (Meta Pixel)").uncheck();
+    await banner.getByLabel("Marketing (Meta-Pixel)").uncheck();
     await banner.getByRole("button", { name: "Auswahl speichern" }).click();
   }
   await page.getByRole("button", { name: T.startButton }).click();

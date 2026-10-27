@@ -60,6 +60,11 @@ Quellen: `app/(site)/impressum/page.tsx`, `app/(site)/datenschutz/page.tsx`,
       Vercel, Upstash, Calendly, SUPERBRAND (n8n). Wer ist Vertragspartner von Vercel und Upstash
       (Functional direkt oder SUPERBRAND als Unterauftragnehmer)?
 - [ ] **C12** Alte WordPress-Einsendungen (Check-up, Körpermaße) exportieren oder löschen.
+- [ ] **C13** Texte des Einwilligungsbanners (`components/consent/consent-banner.tsx`) zusammen mit
+      der DSE freigeben. Seit der Prüfung vom 27.10.2026: Statistik = „pseudonyme Auswertung der
+      Seitennutzung mit Cookies; Daten können an Google in den USA gehen“ (vorher „anonym“, falsch
+      wegen `_ga`), Marketing = „Erfolgsmessung und gezielte Ausspielung unserer Anzeigen … Daten
+      können an Meta in den USA gehen“ (vorher nur Erfolgsmessung, die DSE nennt beide Zwecke).
 - [ ] **Pixel ohne Einwilligung auf `/black-november/`** (Entscheidung Dennis, Risiko nach § 25
       Abs. 1 TDDDG): Conny muss davon wissen. Die DSE beschreibt es offen und nennt lit. f als
       Rechtsgrundlage. Gilt nur bis zum Ende der Aktion; danach den Absatz „Ausnahme“ und den

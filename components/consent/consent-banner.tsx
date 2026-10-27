@@ -11,6 +11,8 @@ const DATENSCHUTZ = "/datenschutz/";
 
 /**
  * Schlanker Eigenbau statt CMP-SaaS (kein TCF nötig, nur 2 Empfänger).
+ * Kategorie-Texte decken sich mit der DSE (GA4: Cookies _ga, also pseudonym, nicht anonym;
+ * Pixel: Messung UND gezielte Ausspielung). Wortlaut gibt Conny mit der DSE frei (C1).
  * Bottom-Sheet als Overlay → kein CLS. Hard-Gating: GA4/Pixel laden erst
  * nach Opt-in (analytics-scripts.tsx). Ausnahme BN-LP: Pixel ohne Einwilligung
  * (Entscheidung Dennis), deshalb dort ein zusätzlicher Hinweis.
@@ -49,8 +51,8 @@ export function ConsentBanner() {
           <p className="font-bold text-brand">Deine Privatsphäre</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Wir nutzen Cookies, um zu verstehen, wie unsere Website genutzt wird (Statistik), und
-            um unsere Werbung zu verbessern (Marketing). Du entscheidest – Training geht auch ohne
-            Cookies. Details in der{" "}
+            um den Erfolg unserer Werbung zu messen und sie gezielter auszuspielen (Marketing). Du
+            entscheidest – Training geht auch ohne Cookies. Details in der{" "}
             {/* normales <a>: Dokumentgrenze, damit der LP-Pixel nicht per Client-Navigation mitwandert */}
             <a href={DATENSCHUTZ} className="underline">
               Datenschutzerklärung
@@ -80,7 +82,8 @@ export function ConsentBanner() {
               <Label htmlFor="consent-statistik" className="font-semibold">
                 Statistik (Google Analytics)
                 <span className="block text-xs font-normal text-muted-foreground">
-                  Anonyme Auswertung der Seitennutzung.
+                  Pseudonyme Auswertung der Seitennutzung mit Cookies; Daten können an Google in
+                  den USA gehen.
                 </span>
               </Label>
               <input
@@ -93,9 +96,10 @@ export function ConsentBanner() {
             </div>
             <div className="flex items-center justify-between gap-4">
               <Label htmlFor="consent-marketing" className="font-semibold">
-                Marketing (Meta Pixel)
+                Marketing (Meta-Pixel)
                 <span className="block text-xs font-normal text-muted-foreground">
-                  Erfolgsmessung unserer Anzeigen auf Facebook & Instagram.
+                  Erfolgsmessung und gezielte Ausspielung unserer Anzeigen auf Facebook & Instagram
+                  mit Cookies; Daten können an Meta in den USA gehen.
                 </span>
               </Label>
               <input
