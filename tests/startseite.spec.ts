@@ -4,6 +4,7 @@ import { EXTRAS, FRAGEN_LABEL, STARTGEBUEHR_HINWEIS, TARIFE } from "../content/p
 import { KEINE_WEITERLEITUNG } from "../content/redirects";
 import { BETREUUNGSZEITEN, CTA, KONTAKT } from "../lib/cta";
 import { NAV_ITEMS } from "../lib/nav";
+import { trackerAbfangen } from "./helpers/meta-recorder";
 
 /**
  * Startseite als One-Pager wie live (Stand 27.10.2026): Anker, Reihenfolge, Inhalte und
@@ -124,7 +125,9 @@ test.describe("Black-November-Teaser", () => {
     await expect(teaser).toContainText(BN_FUSSNOTE);
   });
 
-  test("Klick lädt die LP als neues Dokument (kein Client-Routing)", async ({ page }) => {
+  test("Klick lädt die LP als neues Dokument (kein Client-Routing)", async ({ page, context }) => {
+    // Die LP startet den Pixel ohne Einwilligung: Tracker abfangen, sonst gehen echte Events raus
+    const tracker = await trackerAbfangen(context);
     await page.goto("/");
     await consentSchliessen(page);
     await page.evaluate(() => Object.assign(window, { __startseiteMarker: true }));
@@ -136,6 +139,7 @@ test.describe("Black-November-Teaser", () => {
     );
     // Bei Client-Navigation bliebe das window-Objekt erhalten
     expect(await page.evaluate(() => "__startseiteMarker" in window)).toBe(false);
+    expect(tracker.fbevents(), "Pixel der LP lief gegen den Recorder").toBeGreaterThan(0);
   });
 });
 

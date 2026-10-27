@@ -19,10 +19,9 @@ import { TEST_ENV } from "./helpers/test-env";
  * Route-Handler direkt (Versandfehler). Echte Einsendungen landen in der Testsenke des
  * JSON-Mailtransports (FORM_TO = abnahme@example.invalid), nie per SMTP.
  *
- * Das Quiz läuft bis zum Umbau der Startseite (P1a) unter /gesundheits-check/; danach leitet
- * die Route auf /#checkup um, der Test bleibt gültig.
+ * Das Quiz steht auf der Startseite in #checkup (/gesundheits-check/ leitet per 308 dorthin).
  */
-const QUIZ_SEITE = "/gesundheits-check/";
+const QUIZ_SEITE = "/";
 const API = "/api/checkup/";
 
 const eindeutig = (wer: string) => `${wer} ${crypto.randomUUID().slice(0, 8)}`;
@@ -33,7 +32,9 @@ async function quizOeffnen(page: Page, consent: "notwendig" | "statistik" = "not
   if (consent === "notwendig") {
     await banner.getByRole("button", { name: "Nur notwendige" }).click();
   } else {
+    // Seit dem Opt-in ohne Häkchen (P2a) ist nichts vorausgewählt: Statistik an, Marketing aus
     await banner.getByRole("button", { name: "Einstellungen" }).click();
+    await banner.getByLabel("Statistik (Google Analytics)").check();
     await banner.getByLabel("Marketing (Meta Pixel)").uncheck();
     await banner.getByRole("button", { name: "Auswahl speichern" }).click();
   }
