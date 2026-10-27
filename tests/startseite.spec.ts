@@ -1,7 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import { BN_AKTION_ENDE, BN_ERSPARNIS, BN_FUSSNOTE, BN_PREIS, BN_STATT } from "../content/black-november";
 import { EXTRAS, FRAGEN_LABEL, STARTGEBUEHR_HINWEIS, TARIFE } from "../content/preise";
+import { KEINE_WEITERLEITUNG } from "../content/redirects";
 import { BETREUUNGSZEITEN, CTA, KONTAKT } from "../lib/cta";
+import { NAV_ITEMS } from "../lib/nav";
 
 /**
  * Startseite als One-Pager wie live (Stand 27.10.2026): Anker, Reihenfolge, Inhalte und
@@ -9,6 +11,18 @@ import { BETREUUNGSZEITEN, CTA, KONTAKT } from "../lib/cta";
  */
 
 const ANKER = ["black-november-section", "leistung", "aktuelles", "preise", "checkup", "kontakt"];
+
+/** Menü wie live (menu-functional2026), hrefs in der Slash-Form */
+const MENUE = ["/", "/#leistung", "/#aktuelles", "/#preise", "/#checkup", "/#kontakt"];
+
+/** Alle Seiten der Website plus eine 404 (P2a prüft die Landingpage selbst) */
+const SEITEN = ["/", "/koerpermasse/", "/impressum/", "/datenschutz/", "/barrierefreiheit/", "/gibt-es-nicht/"];
+
+/**
+ * Veraltete Werbetexte (Juni-Stand, live nicht mehr gültig). Bewusst nicht pauschal
+ * „14 Tage“: Die Datenschutzerklärung darf Fristen wie „14 Tage“ nennen (design-review E3).
+ */
+const VERBOTEN = ["14 Tage kostenlos", "14 TAGE", "kostenlos testen", "Plan wählen", "/ Woche", "INJOY"];
 
 /** Die 3 neuesten Reels vom 27.10.2026 (content/instagram-fallback.ts) */
 const REELS = [
@@ -243,3 +257,88 @@ test.describe("Inhalte", () => {
     await expect(kontakt.locator("video")).toHaveCount(1);
   });
 });
+
+test.describe("Rahmen", () => {
+  test("Menü wie live: 6 Anker in Großbuchstaben, Header-CTA „Buche ein Probetraining“", async ({ page, isMobile }) => {
+    expect(NAV_ITEMS.map((n) => n.href)).toEqual(MENUE);
+    await page.goto("/");
+    let navi = page.getByRole("navigation", { name: "Hauptnavigation" });
+    let cta = page.locator("header").getByRole("link", { name: "Buche ein Probetraining" });
+    if (isMobile) {
+      await consentSchliessen(page);
+      await page.getByRole("button", { name: "Menü öffnen" }).click();
+      navi = page.getByRole("navigation", { name: "Mobile Navigation" });
+      cta = page.getByRole("dialog").getByRole("link", { name: "Buche ein Probetraining" });
+    }
+    const links = navi.getByRole("link");
+    expect(await links.evaluateAll((els) => els.map((el) => el.getAttribute("href")))).toEqual(MENUE);
+    expect(await links.evaluateAll((els) => els.map((el) => (el as HTMLElement).innerText.trim()))).toEqual([
+      "GYM",
+      "LEISTUNGEN",
+      "AKTUELLES",
+      "PREISE",
+      "CHECK UP",
+      "KONTAKT",
+    ]);
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", CTA.whatsappProbetraining);
+  });
+
+  test("Menü-Klick (Desktop) scrollt zur Section und setzt den Anker", async ({ page, isMobile }) => {
+    test.skip(isMobile, "mobil: smoke.spec.ts (Sheet schließt vor dem Scrollen)");
+    await page.goto("/");
+    await consentSchliessen(page);
+    await page.getByRole("navigation", { name: "Hauptnavigation" }).getByRole("link", { name: /^kontakt$/i }).click();
+    await expect(page).toHaveURL(/\/#kontakt$/);
+    await expect(page.locator("#kontakt")).toBeInViewport();
+  });
+
+  test("„Mitglied werden“ (Hero, Sticky-Leiste) führt überall auf den Mitglieds-Link", async ({ page }) => {
+    await page.goto("/");
+    const links = page.locator("a", { hasText: /^Mitglied werden$/ });
+    expect(await links.count()).toBeGreaterThanOrEqual(2);
+    for (const link of await links.all()) await expect(link).toHaveAttribute("href", CTA.whatsappMitglied);
+  });
+
+  test("Footer: Live-Claim, Menü, WhatsApp ohne Text, gym@ und Copyright-Zeile", async ({ page }) => {
+    await page.goto("/impressum/");
+    const footer = page.locator("footer");
+    await expect(footer).toContainText("Dein Fitnessstudio in Wiehl");
+    await expect(footer).toContainText("Gym is open 24/7");
+    await expect(footer).toContainText(`© ${new Date().getFullYear()} Functional Wiehl. Alle Rechte vorbehalten.`);
+    for (const href of MENUE) await expect(footer.locator(`a[href="${href}"]`), href).toHaveCount(1);
+    await expect(footer.locator(`a[href="${CTA.whatsappAllgemein}"]`)).toHaveCount(1);
+    await expect(footer.locator(`a[href="${CTA.mail}"]`)).toHaveText(KONTAKT.mail);
+    for (const z of BETREUUNGSZEITEN.zeilen) await expect(footer).toContainText(`${z.label}: ${z.wert}`);
+  });
+
+  test("404: Header und Footer, Links zu Startseite, Preisen und Kontakt", async ({ page }) => {
+    const antwort = await page.goto("/gibt-es-nicht/");
+    expect(antwort?.status()).toBe(404);
+    const main = page.locator("main");
+    await expect(main.getByRole("heading", { level: 1 })).toHaveText("Diese Seite gibt es nicht (mehr)");
+    for (const href of ["/", "/#preise", "/#kontakt", CTA.whatsappAllgemein]) {
+      await expect(main.locator(`a[href="${href}"]`), href).toHaveCount(1);
+    }
+  });
+});
+
+for (const seite of SEITEN) {
+  test(`${seite}: keine veralteten Werbetexte, interne Links nur auf bleibende Seiten`, async ({ page, request }) => {
+    const html = await (await request.get(seite)).text();
+    for (const text of VERBOTEN) expect(html, `„${text}“ im HTML von ${seite}`).not.toContain(text);
+
+    await page.goto(seite);
+    const sichtbar = await page.locator("body").innerText();
+    for (const text of VERBOTEN) expect(sichtbar, `„${text}“ auf ${seite}`).not.toContain(text);
+
+    const intern = await page
+      .locator('a[href^="/"]')
+      .evaluateAll((els) => els.map((el) => el.getAttribute("href") ?? ""));
+    for (const href of intern) {
+      const pfad = new URL(href, "http://basis.invalid").pathname;
+      const bleibt = (KEINE_WEITERLEITUNG as readonly string[]).includes(pfad) || /\.[^/]+$/.test(pfad);
+      expect(bleibt, `${seite} verlinkt ${href}`).toBe(true);
+    }
+  });
+}

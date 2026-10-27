@@ -15,7 +15,7 @@ async function dismissConsent(page: import("@playwright/test").Page) {
   }
 }
 
-test("WhatsApp-FAB: nur Desktop sichtbar, führt auf den Probetraining-Link", async ({
+test("WhatsApp-FAB: nur Desktop sichtbar, führt auf WhatsApp ohne Text („Kontakt über WhatsApp“)", async ({
   page,
   isMobile,
 }) => {
@@ -27,7 +27,7 @@ test("WhatsApp-FAB: nur Desktop sichtbar, führt auf den Probetraining-Link", as
     await expect(fab).toBeHidden();
   } else {
     await expect(fab).toBeVisible();
-    await expect(fab).toHaveAttribute("href", CTA.whatsappProbetraining);
+    await expect(fab).toHaveAttribute("href", CTA.whatsappAllgemein);
   }
 });
 
