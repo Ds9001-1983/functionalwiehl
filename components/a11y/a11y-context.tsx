@@ -61,6 +61,8 @@ export function A11yProvider({ children }: { children: React.ReactNode }) {
   // Beim Mount aus localStorage übernehmen (Inline-Script hat die Klassen
   // schon vor dem Paint gesetzt; hier wird nur der React-State synchronisiert).
   useEffect(() => {
+    // Bewusst erst nach der Hydration: localStorage gibt es auf dem Server nicht.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSettings(read());
   }, []);
 

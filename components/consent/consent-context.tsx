@@ -48,6 +48,8 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = readConsentCookie();
+    // Bewusst erst nach der Hydration: Server und erster Client-Render zeigen denselben Stand (loading).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setConsent(stored);
     setBannerOpen(stored === null);
     setLoading(false);
