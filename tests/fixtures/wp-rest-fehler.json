@@ -1,0 +1,13 @@
+{
+  "stand": "2026-10-27",
+  "quelle": "assets/raw/wp-errors.txt (curl gegen https://functional-wiehl.de/wp-json/sb-bn/v1/click/BN-ZZZZ ohne Auth bzw. GET auf die POST-Route /wp-json/sb-bn/v1/click)",
+  "hinweis": "Bodies byte-genau wie von WordPress (json_encode mit \\u-Escapes), nicht neu formatieren",
+  "rest_forbidden": {
+    "status": 401,
+    "body": "{\"code\":\"rest_forbidden\",\"message\":\"Du bist leider nicht berechtigt, diese Aktion durchzuf\\u00fchren.\",\"data\":{\"status\":401}}"
+  },
+  "rest_no_route": {
+    "status": 404,
+    "body": "{\"code\":\"rest_no_route\",\"message\":\"Es wurde keine Route gefunden, die mit der URL und der Anfragemethode \\u00fcbereinstimmt.\",\"data\":{\"status\":404}}"
+  }
+}
