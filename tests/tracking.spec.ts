@@ -145,6 +145,41 @@ test.describe("Website im Browser", () => {
     await expect.poll(async () => (await pixelAufrufe(page)).filter((c) => c[1] === "PageView").length).toBe(2);
     expect((await pixelAufrufe(page)).filter((c) => c[0] === "init")).toHaveLength(1);
   });
+
+  test("404: misst mit Einwilligung, der Wechsel zur Startseite zählt genau einen Seitenaufruf", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await einwilligungSetzen(context, baseURL!, { statistik: true, marketing: true });
+    await page.goto("/gibt-es-nicht/");
+    // die 404 selbst: Pixel-Start mit genau einem PageView, GA4 mit config
+    expect((await warteAufPixel(page, 3)).filter((c) => c[1] === "PageView")).toHaveLength(1);
+    await expect.poll(() => page.evaluate(() => typeof window.gtag)).toBe("function");
+
+    // WhatsApp-CTA der 404 (position not_found)
+    await page.locator('main a[href^="https://wa.me/"]').evaluate((el: HTMLElement) => el.click());
+    await expect.poll(async () => (await pixelAufrufe(page)).filter((c) => c[0] === "trackCustom").length).toBe(1);
+    const [klick] = (await pixelAufrufe(page)).filter((c) => c[0] === "trackCustom");
+    expect(klick.slice(0, 2)).toEqual(["trackCustom", "FW_WhatsApp_Klick"]);
+    expect(klick[2]).toMatchObject({ position: "not_found" });
+
+    // Client-Navigation in den Website-Rahmen: Tracker starten nicht neu, ein PageView, ein page_view
+    await page.locator("main").getByRole("link", { name: "Startseite" }).evaluate((el: HTMLElement) => el.click());
+    await page.waitForURL((url) => url.pathname === "/");
+    await expect.poll(async () => (await pixelAufrufe(page)).filter((c) => c[1] === "PageView").length).toBe(2);
+    await page.waitForTimeout(500);
+    const pixel = await pixelAufrufe(page);
+    expect(pixel.filter((c) => c[1] === "PageView")).toHaveLength(2);
+    expect(pixel.filter((c) => c[0] === "init")).toHaveLength(1);
+    const dataLayer = await page.evaluate(() =>
+      ((window as unknown as { dataLayer?: IArguments[] }).dataLayer ?? []).map((a) => JSON.parse(JSON.stringify([...a])))
+    );
+    expect(dataLayer.filter((e) => e[0] === "config")).toHaveLength(1);
+    expect(dataLayer.filter((e) => e[0] === "event" && e[1] === "page_view")).toEqual([
+      ["event", "page_view", { page_path: "/" }],
+    ]);
+  });
 });
 
 test.describe("trackEvent / trackPageview (ohne Browser)", () => {

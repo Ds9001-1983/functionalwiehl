@@ -13,8 +13,9 @@ import { useConsent } from "./consent-context";
  * Google oder Meta gesendet — die Skripte existieren bis dahin nicht im DOM.
  * Wird per Playwright-Request-Interception abgesichert (tests/consent.spec.ts, tests/tracking.spec.ts).
  *
- * Nur im Website-Rahmen (app/(site)/layout.tsx), nicht auf der BN-LP: Dort startet die
- * Inline-Runtime den Pixel ohne Einwilligung, GA4 lädt dort wie live nie (design-review (a)-1).
+ * Nur im Website-Rahmen (app/(site)/layout.tsx) und auf der 404 (app/not-found.tsx), nicht auf
+ * der BN-LP: Dort startet die Inline-Runtime den Pixel ohne Einwilligung, GA4 lädt dort wie live
+ * nie (design-review (a)-1).
  */
 
 // Google Consent Mode v2, Basic Mode: gtag existiert erst nach der Statistik-Einwilligung.

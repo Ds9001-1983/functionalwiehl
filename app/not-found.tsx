@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AnalyticsScripts } from "@/components/consent/analytics-scripts";
 import { WhatsAppCta } from "@/components/cta-buttons";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -7,8 +8,13 @@ const linkStil = "font-bold text-brand underline-offset-4 hover:underline";
 
 /**
  * Root-404: rendert nur im Root-Layout (nicht in app/(site)/layout.tsx) und
- * bindet Header und Footer deshalb selbst ein. noindex setzt Next selbst.
+ * bindet Header, Footer und AnalyticsScripts deshalb selbst ein. noindex setzt Next selbst.
  * Greift auch für alle WordPress-Reste (wp-login.php, wp-admin, wp-content …).
+ *
+ * AnalyticsScripts auch hier: Sonst misst die 404 trotz Einwilligung nichts (auch nicht den
+ * WhatsApp-Klick „not_found“), und beim Wechsel per <Link> in den Website-Rahmen starten
+ * Pixel und GA4 erst dort und melden den ersten Seitenaufruf doppelt (Start + trackPageview).
+ * Laufen sie schon, startet next/script sie nicht erneut, und es bleibt ein PageView je Wechsel.
  */
 export default function NotFound() {
   return (
@@ -36,6 +42,7 @@ export default function NotFound() {
         </section>
       </main>
       <SiteFooter />
+      <AnalyticsScripts />
     </div>
   );
 }
