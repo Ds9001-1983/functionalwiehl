@@ -154,9 +154,23 @@ P0 Fundament → Worktrees parallel → Merge **P2 → P3 → P1**, je Rebase au
 - [ ] D/K: Mail über gym@ und info@ senden und empfangen, SPF, DKIM und DMARC im Header.
 - [ ] D: Search Console: `/sitemap.xml` einreichen, `wp-sitemap.xml` entfernen, Abdeckung und 404 eine Woche beobachten.
 - [ ] D/K: Links aus 0.4 noch einmal prüfen.
-- [ ] Vercel-Logs die ersten Tage täglich: `[bn-click]` (Fehltreffer = Migrationslücke), `[form:koerpermasse]` und `[form:checkup]` (nur Codes, nie Inhalte).
+- [ ] D: Vercel-Logs in den ersten zwei Wochen täglich (Vercel Pro hält Runtime-Logs nur 1 Tag): `[bn-click]` (Fehltreffer = Migrationslücke), `[form:koerpermasse]` und `[form:checkup]` (nur Codes, nie Inhalte). Danach siehe „Überwachung im Betrieb“.
 
 ## Schritt 6 – Nach dem Go-live
+
+**Überwachung im Betrieb.** Fehler beim Formular-Versand (502/503) und im Klickspeicher landen nur
+im Log (`[form:…]`, `[bn-click]`); die Person sieht eine ehrliche Fehlermeldung, das Studio merkt
+nichts, n8n bekommt still `{found:false}`. Einen Mail-Alarm an `ALERT_TO` gibt es im Code bewusst
+nicht: Beim häufigsten Fehler (SMTP-Ausfall, etwa nach einem Passwortwechsel für gym@) käme er
+ebenfalls nicht an. `ALERT_TO` prüft bisher nur `check:smtp`, das Instagram-Paket alarmiert darüber.
+- [ ] D: In Vercel unter Settings → Alerts eine Regel „Error anomaly“ (5xx) für das Projekt anlegen,
+      Benachrichtigung an Dennis. Vercel löst erst oberhalb einer Mindestaktivität aus, ein einzelner
+      502 eines selten genutzten Formulars bleibt womöglich darunter. Deshalb zusätzlich:
+- [ ] D: Nach jedem Passwortwechsel für gym@ sofort `SMTP_PASS` in Vercel (Production und Preview)
+      ändern, neu deployen und `npm run check:smtp` laufen lassen.
+- [ ] D: Wöchentlich die Logs auf `[form:` und `[bn-click]` mit Status ≥ 500 filtern (bei 1 Tag
+      Aufbewahrung nur eine Stichprobe) und einmal im Monat eine Testeinsendung Check-up mit „TEST“,
+      die C in gym@ bestätigt und löscht. Kein Log-Drain, ohne die Log-Frist in der DSE anzupassen.
 
 - [ ] **Instagram-Paket:** D oder C legt die Meta-App „Functional Website Feed“ an (Instagram Login, nur `instagram_business_basic`, Datenschutz-URL `/datenschutz/`) und erzeugt den Token. K: `lib/instagram/*`, Cron `/api/cron/instagram/` (mit Slash, Vercel-Crons folgen keinen Redirects), `crons` in `vercel.json`, `remotePatterns` nur für den Blob-Host, Alarm an `ALERT_TO`. Bis dahin greift der statische Fallback.
 - [ ] **10.11.:** Teaser entfernen, `/black-november/` leitet per 308 auf `/#preise` (K; ein Datumstest wird ab dem 10.11. rot und erzwingt den Rückbau).
