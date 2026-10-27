@@ -1,0 +1,872 @@
+{
+  "stand": "2026-10-27T07:12:04.569Z",
+  "quelle": "home.html",
+  "start": {
+    "nummer": 1,
+    "gesamt": 27,
+    "titel": "Fitness- & Gesundheits-Check-up",
+    "untertitel": "Willkommen zu Ihrem persönlichen Gesundheits-Assessment",
+    "button": "🚀 Los geht’s!"
+  },
+  "schritte": [
+    {
+      "id": "2",
+      "nummer": 2,
+      "titel": "Dein Beruf",
+      "untertitel": "Wie ist deine berufliche Tätigkeit hauptsächlich?",
+      "typ": "single",
+      "key": "beruf",
+      "optionen": [
+        {
+          "wert": "sitzend",
+          "icon": "💺",
+          "label": "sitzend",
+          "weiter": "3"
+        },
+        {
+          "wert": "stehend",
+          "icon": "🧍",
+          "label": "stehend",
+          "weiter": "3"
+        },
+        {
+          "wert": "gemischt",
+          "icon": "🔄",
+          "label": "gemischt",
+          "weiter": "3"
+        },
+        {
+          "wert": "körperlich anstrengend",
+          "icon": "💪",
+          "label": "körperlich anstrengend",
+          "weiter": "3"
+        },
+        {
+          "wert": "Schichtdienst",
+          "icon": "🌙",
+          "label": "Schichtdienst",
+          "weiter": "3"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "nummer": 3,
+      "titel": "Dein Stresslevel",
+      "untertitel": "Wie schätzt du dein aktuelles Stresslevel ein?",
+      "typ": "single",
+      "key": "stresslevel",
+      "optionen": [
+        {
+          "wert": "niedrig",
+          "icon": "😌",
+          "label": "niedrig",
+          "weiter": "4"
+        },
+        {
+          "wert": "mittel",
+          "icon": "⚖️",
+          "label": "mittel",
+          "weiter": "4"
+        },
+        {
+          "wert": "groß",
+          "icon": "😰",
+          "label": "groß",
+          "weiter": "4"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "nummer": 4,
+      "titel": "Dein Fitnesslevel",
+      "untertitel": "Wie schätzt du dein aktuelles Fitnesslevel ein?",
+      "typ": "single",
+      "key": "fitnesslevel",
+      "optionen": [
+        {
+          "wert": "niedrig",
+          "icon": "🐌",
+          "label": "niedrig",
+          "weiter": "5"
+        },
+        {
+          "wert": "mittel",
+          "icon": "🚶",
+          "label": "mittel",
+          "weiter": "5"
+        },
+        {
+          "wert": "hoch",
+          "icon": "🏃",
+          "label": "hoch",
+          "weiter": "5"
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "nummer": 5,
+      "titel": "Deine Trainingsziele",
+      "untertitel": "Was ist dein Hauptfokus beim Training?",
+      "typ": "single",
+      "key": "trainingsziele",
+      "optionen": [
+        {
+          "wert": "Muskeln & Körperstruktur",
+          "icon": "💪",
+          "label": "Muskeln & Körperstruktur",
+          "weiter": "F6A"
+        },
+        {
+          "wert": "Cardio & Mobility",
+          "icon": "❤️",
+          "label": "Cardio & Mobility",
+          "weiter": "F6B"
+        },
+        {
+          "wert": "Gesundheit und Lifestyle",
+          "icon": "🌱",
+          "label": "Gesundheit und Lifestyle",
+          "weiter": "F6C"
+        }
+      ]
+    },
+    {
+      "id": "F6A",
+      "nummer": 6,
+      "titel": "SUPER DA KÖNNEN WIR DIR BEI HELFEN",
+      "untertitel": "Wähle deinen Fokusbereich aus:",
+      "typ": "single",
+      "key": "muskeln_fokus",
+      "optionen": [
+        {
+          "wert": "Muskelaufbau",
+          "icon": "💪",
+          "label": "Muskelaufbau",
+          "weiter": "7"
+        },
+        {
+          "wert": "Gewichtsreduktion",
+          "icon": "⚖️",
+          "label": "Gewichtsreduktion",
+          "weiter": "7"
+        },
+        {
+          "wert": "Figurtraining",
+          "icon": "✨",
+          "label": "Figurtraining",
+          "weiter": "7"
+        }
+      ]
+    },
+    {
+      "id": "F6B",
+      "nummer": 6,
+      "titel": "SUPER DA KÖNNEN WIR DIR BEI HELFEN",
+      "untertitel": "Wähle deinen Fokusbereich aus:",
+      "typ": "single",
+      "key": "cardio_fokus",
+      "optionen": [
+        {
+          "wert": "Mehr Beweglichkeitstraining",
+          "icon": "🤸",
+          "label": "Mehr Beweglichkeitstraining",
+          "weiter": "F6D"
+        },
+        {
+          "wert": "Mehr Ausdauer",
+          "icon": "🏃",
+          "label": "Mehr Ausdauer",
+          "weiter": "F6D"
+        }
+      ]
+    },
+    {
+      "id": "F6C",
+      "nummer": 6,
+      "titel": "SUPER DA KÖNNEN WIR DIR BEI HELFEN",
+      "untertitel": "Wähle deinen Fokusbereich aus:",
+      "typ": "single",
+      "key": "gesundheit_fokus",
+      "optionen": [
+        {
+          "wert": "Rückentraining",
+          "icon": "🦴",
+          "label": "Rückentraining",
+          "weiter": "F6D"
+        },
+        {
+          "wert": "Schmerzen reduzieren",
+          "icon": "🩹",
+          "label": "Schmerzen reduzieren",
+          "weiter": "F6D"
+        },
+        {
+          "wert": "Gesünderer Lebensstil",
+          "icon": "🌱",
+          "label": "Gesünderer Lebensstil",
+          "weiter": "F7E"
+        },
+        {
+          "wert": "Stressabbau",
+          "icon": "😌",
+          "label": "Stressabbau",
+          "weiter": "F7E"
+        },
+        {
+          "wert": "Wohlbefinden steigern",
+          "icon": "✨",
+          "label": "Wohlbefinden steigern",
+          "weiter": "F7E"
+        }
+      ]
+    },
+    {
+      "id": "F6D",
+      "nummer": 7,
+      "titel": "Deine Problemzonen",
+      "untertitel": "Welche Körperregionen bereiten dir Probleme?",
+      "typ": "single",
+      "key": "problemzonen",
+      "optionen": [
+        {
+          "wert": "Bauch",
+          "icon": "🍎",
+          "label": "Bauch",
+          "weiter": "F7E"
+        },
+        {
+          "wert": "Beine",
+          "icon": "🦵",
+          "label": "Beine",
+          "weiter": "F7E"
+        },
+        {
+          "wert": "Po",
+          "icon": "🍑",
+          "label": "Po",
+          "weiter": "F7E"
+        },
+        {
+          "wert": "Arme",
+          "icon": "💪",
+          "label": "Arme",
+          "weiter": "F7E"
+        },
+        {
+          "wert": "Rücken",
+          "icon": "🦴",
+          "label": "Rücken",
+          "weiter": "F7E"
+        },
+        {
+          "wert": "Schulter / Nacken",
+          "icon": "💆",
+          "label": "Schulter / Nacken",
+          "weiter": "F7E"
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "nummer": 7,
+      "titel": "Deine Gewichts-Angaben",
+      "untertitel": "Damit wir dich optimal beraten können",
+      "typ": "gewicht",
+      "felder": [
+        {
+          "id": "current-weight",
+          "label": "⚖️ Aktuelles Gewicht (kg) *",
+          "platzhalter": "z.B. 75"
+        },
+        {
+          "id": "target-weight",
+          "label": "🎯 Wunschgewicht (kg) *",
+          "platzhalter": "z.B. 70"
+        }
+      ],
+      "weiter": "8"
+    },
+    {
+      "id": "F7E",
+      "nummer": 8,
+      "titel": "Bisherige Versuche deine Ziele zu erreichen",
+      "untertitel": "Was hast du bereits probiert? (Mehrfachauswahl möglich)",
+      "typ": "multi",
+      "key": "bisherige_versuche",
+      "optionen": [
+        {
+          "wert": "Sport",
+          "icon": "🏃",
+          "label": "Sport"
+        },
+        {
+          "wert": "Ernährung",
+          "icon": "🥗",
+          "label": "Ernährung"
+        },
+        {
+          "wert": "Medizinisch (z.B. Physio)",
+          "icon": "🏥",
+          "label": "Medizinisch (z.B. Physio)"
+        }
+      ],
+      "weiter": "8",
+      "weiterKey": "bisherige_versuche"
+    },
+    {
+      "id": "8",
+      "nummer": 8,
+      "titel": "Hast du bereits im Fitnessstudio trainiert?",
+      "typ": "single",
+      "key": "fitnessstudio_erfahrung",
+      "optionen": [
+        {
+          "wert": "Ja",
+          "icon": "✅",
+          "label": "Ja",
+          "weiter": "9"
+        },
+        {
+          "wert": "Nein",
+          "icon": "❌",
+          "label": "Nein",
+          "weiter": "9"
+        }
+      ]
+    },
+    {
+      "id": "9",
+      "nummer": 9,
+      "titel": "Was für ein Training hast du gemacht?",
+      "untertitel": "Mehrfachauswahl möglich",
+      "typ": "multi",
+      "key": "training_art",
+      "optionen": [
+        {
+          "wert": "Geräte",
+          "icon": "🏋️",
+          "label": "Geräte"
+        },
+        {
+          "wert": "Kurse",
+          "icon": "🧘",
+          "label": "Kurse"
+        }
+      ],
+      "weiter": "10",
+      "weiterKey": "training_art"
+    },
+    {
+      "id": "10",
+      "nummer": 10,
+      "titel": "Wie häufig möchtest du in Zukunft trainieren?",
+      "typ": "single",
+      "key": "trainingsfrequenz",
+      "optionen": [
+        {
+          "wert": "1x pro Woche",
+          "icon": "😴",
+          "label": "1x pro Woche",
+          "weiter": "11"
+        },
+        {
+          "wert": "2x pro Woche",
+          "icon": "🚶",
+          "label": "2x pro Woche",
+          "weiter": "11"
+        },
+        {
+          "wert": "3x pro Woche",
+          "icon": "💪",
+          "label": "3x pro Woche",
+          "weiter": "11"
+        },
+        {
+          "wert": "4x+ pro Woche",
+          "icon": "🔥",
+          "label": "4x+ pro Woche",
+          "weiter": "11"
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "nummer": 11,
+      "titel": "Bist du in ärztlicher Behandlung?",
+      "typ": "single",
+      "key": "aerztliche_behandlung",
+      "optionen": [
+        {
+          "wert": "Ja",
+          "icon": "✅",
+          "label": "Ja",
+          "weiter": "12"
+        },
+        {
+          "wert": "Nein",
+          "icon": "❌",
+          "label": "Nein",
+          "weiter": "12"
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "nummer": 12,
+      "titel": "Hast du eine Herz-Kreislauf Erkrankung?",
+      "typ": "single",
+      "key": "herz_kreislauf",
+      "optionen": [
+        {
+          "wert": "Ja",
+          "icon": "✅",
+          "label": "Ja",
+          "weiter": "13"
+        },
+        {
+          "wert": "Nein",
+          "icon": "❌",
+          "label": "Nein",
+          "weiter": "14"
+        }
+      ]
+    },
+    {
+      "id": "13",
+      "nummer": 13,
+      "titel": "Welche Erkrankung hast du?",
+      "untertitel": "Mehrfachauswahl möglich",
+      "typ": "multi",
+      "key": "herz_kreislauf_details",
+      "optionen": [
+        {
+          "wert": "Bluthochdruck",
+          "icon": "🩸",
+          "label": "Bluthochdruck"
+        },
+        {
+          "wert": "Herzrhythmusstörung",
+          "icon": "💓",
+          "label": "Herzrhythmusstörung"
+        },
+        {
+          "wert": "KHK",
+          "icon": "❤️",
+          "label": "KHK"
+        },
+        {
+          "wert": "Herzinfarkt",
+          "icon": "💔",
+          "label": "Herzinfarkt"
+        },
+        {
+          "wert": "Herzschwäche",
+          "icon": "🫀",
+          "label": "Herzschwäche"
+        },
+        {
+          "wert": "Schlaganfall",
+          "icon": "🧠",
+          "label": "Schlaganfall"
+        }
+      ],
+      "weiter": "14",
+      "weiterKey": "herz_kreislauf_details"
+    },
+    {
+      "id": "14",
+      "nummer": 14,
+      "titel": "Hast du eine Venenerkrankung?",
+      "typ": "single",
+      "key": "venenerkrankung",
+      "optionen": [
+        {
+          "wert": "Ja",
+          "icon": "✅",
+          "label": "Ja",
+          "weiter": "15"
+        },
+        {
+          "wert": "Nein",
+          "icon": "❌",
+          "label": "Nein",
+          "weiter": "16"
+        }
+      ]
+    },
+    {
+      "id": "15",
+      "nummer": 15,
+      "titel": "Welche Erkrankungen hast du?",
+      "untertitel": "Mehrfachauswahl möglich",
+      "typ": "multi",
+      "key": "venenerkrankung_details",
+      "optionen": [
+        {
+          "wert": "Krampfadern",
+          "icon": "🦵",
+          "label": "Krampfadern"
+        },
+        {
+          "wert": "Besenreiser",
+          "icon": "🩸",
+          "label": "Besenreiser"
+        },
+        {
+          "wert": "Thrombose",
+          "icon": "🩹",
+          "label": "Thrombose"
+        }
+      ],
+      "weiter": "16",
+      "weiterKey": "venenerkrankung_details"
+    },
+    {
+      "id": "16",
+      "nummer": 16,
+      "titel": "Hast du eine Atemwegs-Erkrankung?",
+      "typ": "single",
+      "key": "atemwegs_erkrankung",
+      "optionen": [
+        {
+          "wert": "Ja",
+          "icon": "✅",
+          "label": "Ja",
+          "weiter": "17"
+        },
+        {
+          "wert": "Nein",
+          "icon": "❌",
+          "label": "Nein",
+          "weiter": "18"
+        }
+      ]
+    },
+    {
+      "id": "17",
+      "nummer": 17,
+      "titel": "Welche hast du?",
+      "untertitel": "Mehrfachauswahl möglich",
+      "typ": "multi",
+      "key": "atemwegs_details",
+      "optionen": [
+        {
+          "wert": "Asthma",
+          "icon": "🫁",
+          "label": "Asthma"
+        },
+        {
+          "wert": "COPD",
+          "icon": "😷",
+          "label": "COPD"
+        },
+        {
+          "wert": "Chronische Bronchitis",
+          "icon": "🤧",
+          "label": "Chronische Bronchitis"
+        }
+      ],
+      "weiter": "18",
+      "weiterKey": "atemwegs_details"
+    },
+    {
+      "id": "18",
+      "nummer": 18,
+      "titel": "Hast du eine Stoffwechsel-Erkrankung?",
+      "typ": "single",
+      "key": "stoffwechsel_erkrankung",
+      "optionen": [
+        {
+          "wert": "Ja",
+          "icon": "✅",
+          "label": "Ja",
+          "weiter": "19"
+        },
+        {
+          "wert": "Nein",
+          "icon": "❌",
+          "label": "Nein",
+          "weiter": "20"
+        }
+      ]
+    },
+    {
+      "id": "19",
+      "nummer": 19,
+      "titel": "Welche Erkrankung hast du?",
+      "untertitel": "Mehrfachauswahl möglich",
+      "typ": "multi",
+      "key": "stoffwechsel_details",
+      "optionen": [
+        {
+          "wert": "Diabetes TYP 1",
+          "icon": "🩸",
+          "label": "Diabetes TYP 1"
+        },
+        {
+          "wert": "Diabetes TYP 2",
+          "icon": "🩸",
+          "label": "Diabetes TYP 2"
+        },
+        {
+          "wert": "Schilddrüsen Erkrankung",
+          "icon": "🦋",
+          "label": "Schilddrüsen Erkrankung"
+        },
+        {
+          "wert": "Gicht",
+          "icon": "🦴",
+          "label": "Gicht"
+        }
+      ],
+      "weiter": "20",
+      "weiterKey": "stoffwechsel_details"
+    },
+    {
+      "id": "20",
+      "nummer": 20,
+      "titel": "Hast du orthopädische Beschwerden?",
+      "typ": "single",
+      "key": "orthopaedische_beschwerden",
+      "optionen": [
+        {
+          "wert": "Ja",
+          "icon": "✅",
+          "label": "Ja",
+          "weiter": "21"
+        },
+        {
+          "wert": "Nein",
+          "icon": "❌",
+          "label": "Nein",
+          "weiter": "22"
+        }
+      ]
+    },
+    {
+      "id": "21",
+      "nummer": 21,
+      "titel": "Welche orthopädischen Beschwerden hast du?",
+      "untertitel": "Mehrfachauswahl möglich",
+      "typ": "multi",
+      "key": "orthopaedische_details",
+      "optionen": [
+        {
+          "wert": "HWS (Halswirbelsäule)",
+          "icon": "🦴",
+          "label": "HWS (Halswirbelsäule)"
+        },
+        {
+          "wert": "BWS (Brustwirbelsäule)",
+          "icon": "🦴",
+          "label": "BWS (Brustwirbelsäule)"
+        },
+        {
+          "wert": "LWS (Lendenwirbelsäule)",
+          "icon": "🦴",
+          "label": "LWS (Lendenwirbelsäule)"
+        },
+        {
+          "wert": "Schulter",
+          "icon": "💪",
+          "label": "Schulter"
+        },
+        {
+          "wert": "Arm",
+          "icon": "🦾",
+          "label": "Arm"
+        },
+        {
+          "wert": "Hüfte",
+          "icon": "🦵",
+          "label": "Hüfte"
+        },
+        {
+          "wert": "Knie",
+          "icon": "🦵",
+          "label": "Knie"
+        },
+        {
+          "wert": "Fuß",
+          "icon": "🦶",
+          "label": "Fuß"
+        }
+      ],
+      "weiter": "22",
+      "weiterKey": "orthopaedische_details"
+    },
+    {
+      "id": "22",
+      "nummer": 22,
+      "titel": "Hast du eine psychische Erkrankung?",
+      "typ": "single",
+      "key": "psychische_erkrankung",
+      "optionen": [
+        {
+          "wert": "Ja",
+          "icon": "✅",
+          "label": "Ja",
+          "weiter": "23"
+        },
+        {
+          "wert": "Nein",
+          "icon": "❌",
+          "label": "Nein",
+          "weiter": "23"
+        }
+      ]
+    },
+    {
+      "id": "23",
+      "nummer": 23,
+      "titel": "Hast du sonstige Erkrankungen?",
+      "untertitel": "Mehrfachauswahl möglich",
+      "typ": "multi",
+      "key": "sonstige_erkrankungen",
+      "optionen": [
+        {
+          "wert": "Nein",
+          "icon": "❌",
+          "label": "Nein"
+        },
+        {
+          "wert": "Krebs",
+          "icon": "🎗️",
+          "label": "Krebs"
+        },
+        {
+          "wert": "Autoimmun Erkrankung",
+          "icon": "🛡️",
+          "label": "Autoimmun Erkrankung"
+        },
+        {
+          "wert": "Allergie",
+          "icon": "🤧",
+          "label": "Allergie"
+        }
+      ],
+      "weiter": "24",
+      "weiterKey": "sonstige_erkrankungen"
+    },
+    {
+      "id": "24",
+      "nummer": 24,
+      "titel": "Nimmst du regelmäßig Medikamente?",
+      "typ": "single",
+      "key": "regelmaessige_medikamente",
+      "optionen": [
+        {
+          "wert": "Ja",
+          "icon": "✅",
+          "label": "Ja",
+          "weiter": "25"
+        },
+        {
+          "wert": "Nein",
+          "icon": "❌",
+          "label": "Nein",
+          "weiter": "26"
+        }
+      ]
+    },
+    {
+      "id": "25",
+      "nummer": 25,
+      "titel": "Welche nimmst du?",
+      "untertitel": "Mehrfachauswahl möglich",
+      "typ": "multi",
+      "key": "medikamente_details",
+      "optionen": [
+        {
+          "wert": "Herz-Kreislauf Medikamente",
+          "icon": "❤️",
+          "label": "Herz-Kreislauf Medikamente"
+        },
+        {
+          "wert": "Diabetes Medikamente",
+          "icon": "🩸",
+          "label": "Diabetes Medikamente"
+        },
+        {
+          "wert": "Schmerzmittel",
+          "icon": "💊",
+          "label": "Schmerzmittel"
+        },
+        {
+          "wert": "Psychopharmaka",
+          "icon": "🧠",
+          "label": "Psychopharmaka"
+        },
+        {
+          "wert": "Andere Medikamente",
+          "icon": "🦴",
+          "label": "Andere Medikamente"
+        }
+      ],
+      "weiter": "26",
+      "weiterKey": "medikamente_details"
+    },
+    {
+      "id": "26",
+      "nummer": 26,
+      "titel": "Hattest du eine OP in den letzten 12 Monaten?",
+      "typ": "single",
+      "key": "op_letzte_12_monate",
+      "optionen": [
+        {
+          "wert": "Ja",
+          "icon": "✅",
+          "label": "Ja",
+          "weiter": "27"
+        },
+        {
+          "wert": "Nein",
+          "icon": "❌",
+          "label": "Nein",
+          "weiter": "27"
+        }
+      ]
+    }
+  ],
+  "kontakt": {
+    "nummer": 27,
+    "titel": "Geschafft! – Kontaktangaben",
+    "felder": [
+      {
+        "id": "contact-name",
+        "label": "👤 Ihr Name *",
+        "typ": "text"
+      },
+      {
+        "id": "contact-email",
+        "label": "📧 E-Mail *",
+        "typ": "email"
+      },
+      {
+        "id": "contact-phone",
+        "label": "📞 Telefon *",
+        "typ": "tel"
+      }
+    ],
+    "einwilligung": "Ich akzeptiere die Datenschutz­bestimmungen *",
+    "sendet": "Check-up wird versendet …",
+    "buttons": [
+      "← Zurück",
+      "🚀 Jetzt absenden"
+    ]
+  },
+  "erfolg": {
+    "titel": "✅ Vielen Dank!",
+    "text": "Ihr Check-up wurde erfolgreich übermittelt.\nWir melden uns schnellstmöglich bei Ihnen."
+  },
+  "skript": {
+    "gesamt": 27,
+    "keineAngabe": "Keine Angabe",
+    "hinweisGewicht": "Bitte beide Gewichtsfelder ausfüllen!",
+    "hinweisPflicht": "Bitte alle Pflichtfelder ausfüllen.",
+    "fehlerNetz": "Übertragung fehlgeschlagen – bitte später versuchen."
+  }
+}

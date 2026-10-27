@@ -1,298 +1,445 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CHECKUP_FRAGEN, FOKUS_NACH_ZIEL, type CheckupFrage } from "@/content/checkup-fragen";
+import { TrackedLink } from "@/components/tracked-link";
+import { useConsent } from "@/components/consent/consent-context";
+import {
+  CHECKUP_GESAMT,
+  CHECKUP_TEXTE as T,
+  EINWILLIGUNG,
+  ERSTER_SCHRITT,
+  GEWICHT,
+  KEINE_ANGABE,
+  SCHRITT,
+  TELEFON_MUSTER,
+  antwortenFuerPfad,
+  gewichtGueltig,
+  naechsterSchritt,
+  pfadFuer,
+  type CheckupAntwort,
+  type CheckupPayload,
+  type GewichtFeld,
+  type Option,
+  type SchrittId,
+} from "@/content/checkup-fragen";
+import { CTA } from "@/lib/cta";
 import { trackEvent } from "@/lib/tracking";
+import { cn } from "@/lib/utils";
 
-type Antworten = Record<string, string | string[] | number>;
+export type CheckupQuizProps = {
+  /**
+   * Überschriftenebene im Quiz (Fragen, Start, Kontakt, Erfolg). Standard "h3": Auf der
+   * Startseite trägt die umgebende <section id="checkup"> die H2 (CHECKUP_TEXTE.titel).
+   */
+  ueberschrift?: "h2" | "h3";
+  /** zusätzliche Klassen für die Karte */
+  className?: string;
+};
 
-type Status = "laeuft" | "kontakt" | "sendet" | "fertig" | "fehler";
+type Phase = "start" | "fragen" | "kontakt" | "fertig";
+type GewichtKey = GewichtFeld["key"];
 
-function optionenFuer(frage: CheckupFrage, antworten: Antworten): string[] {
-  if (frage.id === "fokus") {
-    const ziel = antworten["ziel"];
-    return FOKUS_NACH_ZIEL[String(ziel)] ?? Object.values(FOKUS_NACH_ZIEL).flat();
-  }
-  return frage.typ === "zahl" ? [] : frage.optionen;
-}
-
-export function CheckupQuiz() {
-  const [gestartet, setGestartet] = useState(false);
-  const [schritt, setSchritt] = useState(0);
-  const [antworten, setAntworten] = useState<Antworten>({});
-  const [status, setStatus] = useState<Status>("laeuft");
+/**
+ * Fitness- & Gesundheits-Check-up (27 Schritte wie live, Inhalte aus content/checkup-fragen.ts).
+ * Ein Schritt pro Ansicht, „Zurück“ über den Verlauf, Versand an POST /api/checkup/.
+ *
+ * Einbau auf der Startseite (P1a), die Section trägt H2 und Anker:
+ *   <section id="checkup" aria-labelledby="checkup-titel" className="scroll-mt-24 …">
+ *     <h2 id="checkup-titel">{CHECKUP_TEXTE.titel}</h2>
+ *     <CheckupQuiz />
+ *     <p className="…">{CHECKUP_TEXTE.hinweis}</p>
+ *   </section>
+ * Feste IDs (#checkup-name, #checkup-email, #checkup-telefon) → nur einmal pro Seite einbinden.
+ */
+export function CheckupQuiz({ ueberschrift: H = "h3", className }: CheckupQuizProps) {
+  const { consent } = useConsent();
+  const [phase, setPhase] = useState<Phase>("start");
+  const [verlauf, setVerlauf] = useState<SchrittId[]>([ERSTER_SCHRITT]);
+  const [antworten, setAntworten] = useState<Record<string, CheckupAntwort>>({});
+  const [gewicht, setGewicht] = useState<Record<GewichtKey, string>>({
+    aktuelles_gewicht: "",
+    wunschgewicht: "",
+  });
+  const [gewichtFehler, setGewichtFehler] = useState<string | null>(null);
   const [kontakt, setKontakt] = useState({ name: "", email: "", telefon: "" });
   const [einwilligungDatenschutz, setEinwilligungDatenschutz] = useState(false);
   const [einwilligungGesundheit, setEinwilligungGesundheit] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
+  const [sendet, setSendet] = useState(false);
+  const [fehler, setFehler] = useState<string | null>(null);
 
-  const gesamt = CHECKUP_FRAGEN.length + 1; // + Kontakt-Schritt
-  const frage = CHECKUP_FRAGEN[schritt];
-  const optionen = useMemo(() => (frage ? optionenFuer(frage, antworten) : []), [frage, antworten]);
+  const startZeit = useRef(0);
+  const karteRef = useRef<HTMLDivElement>(null);
+  const kopfRef = useRef<HTMLHeadingElement>(null);
+  const fokusNachWechsel = useRef(false);
+  const id = useId();
 
-  const aktuelleAntwort = frage ? antworten[frage.id] : undefined;
-  const beantwortet =
-    frage &&
-    (frage.typ === "multi"
-      ? Array.isArray(aktuelleAntwort) && aktuelleAntwort.length > 0
-      : aktuelleAntwort !== undefined && aktuelleAntwort !== "");
+  const schritt = SCHRITT[verlauf[verlauf.length - 1]];
 
-  function weiter() {
-    if (schritt + 1 >= CHECKUP_FRAGEN.length) setStatus("kontakt");
-    else setSchritt(schritt + 1);
+  // Nach jedem Schrittwechsel: Fokus auf die neue Überschrift, Karte bei Bedarf ins Bild holen.
+  // Bewusst ohne Smooth-Scroll: Ein schneller Tipp während der Animation träfe sonst die falsche Stelle.
+  useEffect(() => {
+    if (!fokusNachWechsel.current) return;
+    fokusNachWechsel.current = false;
+    kopfRef.current?.focus({ preventScroll: true });
+    const karte = karteRef.current;
+    if (!karte) return;
+    const { top } = karte.getBoundingClientRect();
+    if (top < 0 || top > window.innerHeight / 2) {
+      karte.scrollIntoView({ block: "start", behavior: "instant" });
+    }
+  }, [phase, verlauf]);
+
+  function wechsle(aktion: () => void) {
+    fokusNachWechsel.current = true;
+    aktion();
+  }
+
+  function starten() {
+    startZeit.current = Date.now();
+    wechsle(() => setPhase("fragen"));
+  }
+
+  function weiter(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    let neu: Record<string, CheckupAntwort> = antworten;
+    if (schritt.typ === "multi" && !Array.isArray(antworten[schritt.key])) {
+      neu = { ...antworten, [schritt.key]: [KEINE_ANGABE] }; // ohne Auswahl wie live
+    }
+    if (schritt.typ === "gewicht") {
+      const roh = schritt.felder.map((f) => gewicht[f.key].trim());
+      if (roh.some((w) => !w)) return setGewichtFehler(T.gewichtFehlt);
+      const werte = roh.map((w) => Math.round(Number(w.replace(",", ".")) * 10) / 10);
+      if (!werte.every(gewichtGueltig)) return setGewichtFehler(T.gewichtBereich);
+      setGewichtFehler(null);
+      neu = { ...antworten, ...Object.fromEntries(schritt.felder.map((f, i) => [f.key, werte[i]])) };
+    }
+    const ziel = naechsterSchritt(schritt, neu);
+    if (!ziel) return;
+    setAntworten(neu);
+    wechsle(() => (ziel === "kontakt" ? setPhase("kontakt") : setVerlauf([...verlauf, ziel])));
   }
 
   function zurueck() {
-    if (status === "kontakt") setStatus("laeuft");
-    else if (schritt > 0) setSchritt(schritt - 1);
+    setFehler(null);
+    setGewichtFehler(null);
+    if (phase === "kontakt") return wechsle(() => setPhase("fragen"));
+    if (verlauf.length === 1) return wechsle(() => setPhase("start"));
+    wechsle(() => setVerlauf(verlauf.slice(0, -1)));
   }
 
-  function toggleMulti(option: string) {
-    if (!frage) return;
-    const bisher = Array.isArray(aktuelleAntwort) ? aktuelleAntwort : [];
-    const neu = bisher.includes(option)
-      ? bisher.filter((o) => o !== option)
-      : option === "Keine"
-        ? ["Keine"]
-        : [...bisher.filter((o) => o !== "Keine"), option];
-    setAntworten({ ...antworten, [frage.id]: neu });
+  function waehle(option: Option) {
+    if (schritt.typ === "gewicht") return;
+    if (schritt.typ === "single") return setAntworten({ ...antworten, [schritt.key]: option.wert });
+
+    const bisher = antworten[schritt.key];
+    const auswahl = (Array.isArray(bisher) ? (bisher as string[]) : []).filter((w) => w !== KEINE_ANGABE);
+    const exklusiv = schritt.optionen.filter((o) => o.exklusiv).map((o) => o.wert);
+    const neu = auswahl.includes(option.wert)
+      ? auswahl.filter((w) => w !== option.wert)
+      : option.exklusiv
+        ? [option.wert]
+        : [...auswahl.filter((w) => !exklusiv.includes(w)), option.wert];
+    // leer = noch keine Auswahl (beim Weiter wird daraus „Keine Angabe“), Reihenfolge wie die Optionen
+    const sortiert = schritt.optionen.map((o) => o.wert).filter((w) => neu.includes(w));
+    const rest = { ...antworten };
+    delete rest[schritt.key];
+    setAntworten(sortiert.length ? { ...rest, [schritt.key]: sortiert } : rest);
   }
 
-  async function absenden(e: React.FormEvent) {
+  async function absenden(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!einwilligungDatenschutz || !einwilligungGesundheit) return;
-    setStatus("sendet");
+    if (sendet) return;
+    const pfad = pfadFuer(antworten);
+    if (!pfad) return setFehler(T.fehler);
+    const payload: CheckupPayload = {
+      antworten: antwortenFuerPfad(antworten, pfad),
+      pfad,
+      kontakt: { name: kontakt.name.trim(), email: kontakt.email.trim(), telefon: kontakt.telefon.trim() },
+      einwilligungDatenschutz,
+      einwilligungGesundheit,
+      fw_hp: honeypot,
+      dauerMs: Math.max(0, Date.now() - startZeit.current),
+    };
+    setSendet(true);
+    setFehler(null);
     try {
-      const res = await fetch("/api/checkup", {
+      const res = await fetch("/api/checkup/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ antworten, kontakt, einwilligungGesundheit, einwilligungDatenschutz }),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error(String(res.status));
-      // NIE Antwort- oder Ergebnisdaten ins Tracking (Nähe zu Art. 9 DSGVO)
-      trackEvent("checkup_submit", { position: "quiz" });
-      setStatus("fertig");
+      if (!res.ok) return setFehler(res.status === 429 ? T.fehlerZuVieleAnfragen : T.fehler);
+      // Nur GA4 und nur mit Statistik-Einwilligung, NIE Antwort- oder Ergebnisdaten (Art. 9 DSGVO)
+      if (consent?.statistik) trackEvent("checkup_submit", { position: "quiz" });
+      wechsle(() => setPhase("fertig"));
     } catch {
-      setStatus("fehler");
+      setFehler(T.fehler);
+    } finally {
+      setSendet(false);
     }
   }
 
-  if (!gestartet) {
+  const karte = cn("scroll-mt-24 rounded-card border border-border bg-white p-6 shadow-sm sm:p-8", className);
+  const kopf = "outline-none text-xl";
+  const primaer = "min-h-12 rounded-pill bg-brand px-8 text-base font-bold text-cream hover:bg-brand/90";
+  const zurueckButton = (
+    <Button type="button" variant="ghost" onClick={zurueck} className="min-h-12 rounded-pill px-5">
+      {T.zurueck}
+    </Button>
+  );
+
+  if (phase === "start") {
     return (
-      <div className="rounded-card border border-border bg-white p-8 text-center shadow-sm">
-        <h2 className="text-2xl">Willkommen zu deinem persönlichen Gesundheits-Assessment</h2>
-        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-          Beantworte Schritt für Schritt ein paar Fragen zu Alltag, Zielen und Gesundheit – am
-          Ende melden wir uns mit deiner persönlichen Trainingsempfehlung. Dauert ca. 3 Minuten.
-        </p>
-        <Button
-          onClick={() => setGestartet(true)}
-          className="mt-6 min-h-12 rounded-pill bg-brand px-8 text-base font-bold text-cream hover:bg-brand/90"
-        >
-          🚀 Los geht&apos;s!
+      <div ref={karteRef} data-slot="checkup-quiz" className={cn(karte, "text-center")}>
+        <H ref={kopfRef} tabIndex={-1} className={cn(kopf, "text-2xl")}>
+          {T.startUntertitel}
+        </H>
+        <Button onClick={starten} className={cn(primaer, "mt-6")}>
+          {T.startButton}
         </Button>
       </div>
     );
   }
 
-  if (status === "fertig") {
+  if (phase === "fertig") {
     return (
-      <div role="status" className="rounded-card border border-border bg-white p-8 text-center shadow-sm">
-        <h2 className="text-2xl">✅ Vielen Dank!</h2>
-        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-          Dein Check-up wurde erfolgreich übermittelt. Wir melden uns schnellstmöglich bei dir.
-        </p>
+      <div ref={karteRef} data-slot="checkup-quiz" role="status" className={cn(karte, "text-center")}>
+        <H ref={kopfRef} tabIndex={-1} className={cn(kopf, "text-2xl")}>
+          {T.erfolgTitel}
+        </H>
+        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">{T.erfolgText}</p>
       </div>
     );
   }
 
-  if (status === "kontakt" || status === "sendet" || status === "fehler") {
+  const nummer = phase === "kontakt" ? CHECKUP_GESAMT : schritt.nummer;
+  const fortschritt = (
+    <div className="flex items-center justify-between gap-4">
+      <p id={`${id}-zaehler`} className="text-sm font-semibold text-muted-foreground">
+        Frage {nummer} von {CHECKUP_GESAMT}
+      </p>
+      <div className="h-2 w-32 overflow-hidden rounded-pill bg-muted" aria-hidden="true">
+        <div
+          className="h-full rounded-pill bg-brand transition-all"
+          style={{ width: `${(nummer / CHECKUP_GESAMT) * 100}%` }}
+        />
+      </div>
+    </div>
+  );
+
+  if (phase === "kontakt") {
+    const felder = [
+      { key: "name", typ: "text", autoComplete: "name" },
+      { key: "email", typ: "email", autoComplete: "email" },
+      { key: "telefon", typ: "tel", autoComplete: "tel" },
+    ] as const;
     return (
-      <form onSubmit={absenden} className="rounded-card border border-border bg-white p-6 shadow-sm sm:p-8">
-        <p className="text-sm font-semibold text-muted-foreground">
-          Fast geschafft — Schritt {gesamt} von {gesamt}
-        </p>
-        <h2 className="mt-1 text-xl">Wohin dürfen wir deine Empfehlung schicken?</h2>
-        <div className="mt-5 space-y-4">
-          <div>
-            <Label htmlFor="checkup-name">Name *</Label>
-            <Input
-              id="checkup-name"
-              required
-              autoComplete="name"
-              value={kontakt.name}
-              onChange={(e) => setKontakt({ ...kontakt, name: e.target.value })}
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <Label htmlFor="checkup-email">E-Mail *</Label>
-            <Input
-              id="checkup-email"
-              type="email"
-              required
-              autoComplete="email"
-              value={kontakt.email}
-              onChange={(e) => setKontakt({ ...kontakt, email: e.target.value })}
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <Label htmlFor="checkup-telefon">Telefon *</Label>
-            <Input
-              id="checkup-telefon"
-              type="tel"
-              required
-              autoComplete="tel"
-              value={kontakt.telefon}
-              onChange={(e) => setKontakt({ ...kontakt, telefon: e.target.value })}
-              className="mt-1"
-            />
+      <div ref={karteRef} data-slot="checkup-quiz" className={cn(karte, "relative")}>
+        <form onSubmit={absenden}>
+          {fortschritt}
+          <H ref={kopfRef} tabIndex={-1} aria-describedby={`${id}-zaehler`} className={cn(kopf, "mt-3")}>
+            {T.kontaktTitel}
+          </H>
+          <div className="mt-5 space-y-4">
+            {felder.map(({ key, typ, autoComplete }) => (
+              <div key={key}>
+                <Label htmlFor={`checkup-${key}`}>
+                  <span aria-hidden="true">{T.kontaktFelder[key].icon}</span>
+                  {T.kontaktFelder[key].label}
+                </Label>
+                <Input
+                  id={`checkup-${key}`}
+                  type={typ}
+                  required
+                  autoComplete={autoComplete}
+                  maxLength={key === "email" ? 254 : key === "name" ? 100 : 30}
+                  pattern={key === "telefon" ? TELEFON_MUSTER : undefined}
+                  title={key === "telefon" ? "Ziffern, Leerzeichen und + ( ) / - ." : undefined}
+                  value={kontakt[key]}
+                  onChange={(e) => setKontakt({ ...kontakt, [key]: e.target.value })}
+                  className="mt-1.5 h-11"
+                />
+              </div>
+            ))}
+
+            {/* Honeypot: außerhalb des Sichtbereichs, NICHT aria-hidden (axe: aria-hidden-focus) */}
+            <div className="absolute top-0 -left-[10000px] h-px w-px overflow-hidden">
+              <label htmlFor={`${id}-hp`}>Bitte leer lassen</label>
+              <input
+                id={`${id}-hp`}
+                name="fw_hp"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+              />
+            </div>
+
+            <label className="flex items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                required
+                checked={einwilligungDatenschutz}
+                onChange={(e) => setEinwilligungDatenschutz(e.target.checked)}
+                className="mt-0.5 size-5 shrink-0 accent-brand"
+              />
+              <span>
+                Ich habe die{" "}
+                <Link href="/datenschutz/" className="underline" target="_blank">
+                  Datenschutzerklärung<span className="sr-only"> (öffnet in neuem Tab)</span>
+                </Link>{" "}
+                zur Kenntnis genommen. *
+              </span>
+            </label>
+
+            {/* Art. 9 DSGVO: ausdrückliche, separate Einwilligung – eigene, unangekreuzte Checkbox */}
+            <label className="flex items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                required
+                checked={einwilligungGesundheit}
+                onChange={(e) => setEinwilligungGesundheit(e.target.checked)}
+                className="mt-0.5 size-5 shrink-0 accent-brand"
+              />
+              <span>{EINWILLIGUNG.gesundheit} *</span>
+            </label>
           </div>
 
-          <label className="flex items-start gap-3 text-sm">
-            <input
-              type="checkbox"
-              required
-              checked={einwilligungDatenschutz}
-              onChange={(e) => setEinwilligungDatenschutz(e.target.checked)}
-              className="mt-0.5 size-5 accent-brand"
-            />
-            <span>
-              Ich habe die{" "}
-              <Link href="/datenschutz/" className="underline" target="_blank">
-                Datenschutzerklärung
-              </Link>{" "}
-              zur Kenntnis genommen. *
-            </span>
-          </label>
+          {fehler && (
+            <p role="alert" className="mt-4 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
+              {fehler}{" "}
+              <TrackedLink
+                href={CTA.whatsappAllgemein}
+                event="whatsapp_click"
+                params={{ position: "quiz", preset: "allgemein" }}
+                className="font-bold underline"
+              >
+                {T.fehlerWhatsApp}
+              </TrackedLink>
+            </p>
+          )}
+          <p aria-live="polite" className="sr-only">
+            {sendet ? T.sendet : ""}
+          </p>
 
-          {/* Art. 9 DSGVO: ausdrückliche, separate Einwilligung — eigene,
-              unangekreuzte Checkbox mit konkretem Text (docs/TODO-recht.md) */}
-          <label className="flex items-start gap-3 text-sm">
-            <input
-              type="checkbox"
-              required
-              checked={einwilligungGesundheit}
-              onChange={(e) => setEinwilligungGesundheit(e.target.checked)}
-              className="mt-0.5 size-5 accent-brand"
-            />
-            <span>
-              Ich willige ausdrücklich ein, dass die Functional Wiehl GmbH meine im Check-up
-              angegebenen <strong>Gesundheitsdaten</strong> (Art. 9 DSGVO) zur Erstellung meiner
-              Trainingsempfehlung und zur Kontaktaufnahme verarbeitet. Ich kann diese
-              Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen. *
-            </span>
-          </label>
+          {/* mobil untereinander (Absenden oben, volle Breite), ab sm nebeneinander */}
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {zurueckButton}
+            <Button type="submit" disabled={sendet} className={cn(primaer, "w-full sm:w-auto")}>
+              {sendet ? T.sendet : T.absenden}
+            </Button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  const auswahl = schritt.typ === "gewicht" ? undefined : antworten[schritt.key];
+  return (
+    <div ref={karteRef} data-slot="checkup-quiz" className={karte}>
+      <form onSubmit={weiter} noValidate>
+        {fortschritt}
+        <H ref={kopfRef} tabIndex={-1} aria-describedby={`${id}-zaehler`} className={cn(kopf, "mt-3")}>
+          {schritt.titel}
+        </H>
+        {schritt.untertitel && <p className="mt-1 text-sm text-muted-foreground">{schritt.untertitel}</p>}
+
+        <div className="mt-5">
+          {schritt.typ === "gewicht" ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {schritt.felder.map((f) => (
+                <div key={f.key}>
+                  <Label htmlFor={`${id}-${f.key}`}>
+                    <span aria-hidden="true">{f.icon}</span>
+                    {f.label} *
+                  </Label>
+                  <Input
+                    id={`${id}-${f.key}`}
+                    type="number"
+                    inputMode="decimal"
+                    min={GEWICHT.min}
+                    max={GEWICHT.max}
+                    step={GEWICHT.schritt}
+                    placeholder={f.platzhalter}
+                    required
+                    aria-invalid={gewichtFehler ? true : undefined}
+                    aria-describedby={gewichtFehler ? `${id}-gewicht-fehler` : undefined}
+                    value={gewicht[f.key]}
+                    onChange={(e) => setGewicht({ ...gewicht, [f.key]: e.target.value })}
+                    className="mt-1.5 h-11"
+                  />
+                </div>
+              ))}
+              {gewichtFehler && (
+                <p
+                  id={`${id}-gewicht-fehler`}
+                  role="alert"
+                  className="text-sm text-destructive sm:col-span-2"
+                >
+                  {gewichtFehler}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {schritt.optionen.map((option) => {
+                const aktiv =
+                  schritt.typ === "multi"
+                    ? Array.isArray(auswahl) && auswahl.includes(option.wert)
+                    : auswahl === option.wert;
+                return (
+                  <button
+                    key={option.wert}
+                    type="button"
+                    aria-pressed={aktiv}
+                    onClick={() => waehle(option)}
+                    className={cn(
+                      "flex min-h-12 items-center gap-3 rounded-xl border-2 px-4 py-2 text-left text-sm font-semibold transition-colors",
+                      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+                      aktiv
+                        ? "border-brand bg-brand text-cream"
+                        : "border-border bg-white text-foreground hover:border-brand/50",
+                    )}
+                  >
+                    <span aria-hidden="true" className="text-xl leading-none">
+                      {option.icon}
+                    </span>
+                    <span className="flex-1">{option.wert}</span>
+                    {schritt.typ === "multi" && (
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          "grid size-5 shrink-0 place-items-center rounded border-2 text-xs",
+                          aktiv ? "border-cream" : "border-border",
+                        )}
+                      >
+                        {aktiv ? "✓" : ""}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {status === "fehler" && (
-          <p role="alert" className="mt-4 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
-            Das hat leider nicht geklappt. Versuch es bitte erneut oder schreib uns direkt per
-            WhatsApp.
-          </p>
-        )}
-
-        <div className="mt-6 flex items-center justify-between gap-3">
-          <Button type="button" variant="ghost" onClick={zurueck} className="rounded-pill">
-            ← Zurück
-          </Button>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          {zurueckButton}
           <Button
             type="submit"
-            disabled={status === "sendet"}
-            className="min-h-12 rounded-pill bg-brand px-8 font-bold text-cream hover:bg-brand/90"
+            disabled={schritt.typ === "single" && !naechsterSchritt(schritt, antworten)}
+            className={primaer}
           >
-            {status === "sendet" ? "Wird gesendet …" : "🚀 Jetzt absenden"}
+            {T.weiter}
           </Button>
         </div>
       </form>
-    );
-  }
-
-  return (
-    <div className="rounded-card border border-border bg-white p-6 shadow-sm sm:p-8">
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-sm font-semibold text-muted-foreground">
-          Frage {schritt + 1} von {gesamt}
-        </p>
-        <div className="h-2 w-32 overflow-hidden rounded-pill bg-muted" aria-hidden="true">
-          <div
-            className="h-full rounded-pill bg-brand transition-all"
-            style={{ width: `${((schritt + 1) / gesamt) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      <h2 className="mt-3 text-xl">{frage.frage}</h2>
-      {frage.typ === "multi" && (
-        <p className="mt-1 text-sm text-muted-foreground">
-          {("hinweis" in frage && frage.hinweis) || "Mehrfachauswahl möglich"}
-        </p>
-      )}
-
-      <div className="mt-5">
-        {frage.typ === "zahl" ? (
-          <div className="flex max-w-xs items-center gap-2">
-            <Input
-              type="number"
-              inputMode="numeric"
-              min={frage.min}
-              max={frage.max}
-              value={aktuelleAntwort === undefined ? "" : String(aktuelleAntwort)}
-              onChange={(e) =>
-                setAntworten({ ...antworten, [frage.id]: e.target.value ? Number(e.target.value) : "" })
-              }
-              aria-label={frage.frage}
-            />
-            <span className="text-sm text-muted-foreground">{frage.einheit}</span>
-          </div>
-        ) : (
-          <div className="grid gap-2 sm:grid-cols-2">
-            {optionen.map((option) => {
-              const aktiv =
-                frage.typ === "multi"
-                  ? Array.isArray(aktuelleAntwort) && aktuelleAntwort.includes(option)
-                  : aktuelleAntwort === option;
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  aria-pressed={aktiv}
-                  onClick={() =>
-                    frage.typ === "multi"
-                      ? toggleMulti(option)
-                      : setAntworten({ ...antworten, [frage.id]: option })
-                  }
-                  className={`min-h-12 rounded-xl border-2 px-4 py-2 text-left text-sm font-semibold transition-colors ${
-                    aktiv
-                      ? "border-brand bg-brand text-cream"
-                      : "border-border bg-white text-foreground hover:border-brand/50"
-                  }`}
-                >
-                  {option}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-6 flex items-center justify-between gap-3">
-        <Button type="button" variant="ghost" onClick={zurueck} disabled={schritt === 0} className="rounded-pill">
-          ← Zurück
-        </Button>
-        <Button
-          type="button"
-          onClick={weiter}
-          disabled={!beantwortet}
-          className="min-h-12 rounded-pill bg-brand px-8 font-bold text-cream hover:bg-brand/90"
-        >
-          Weiter →
-        </Button>
-      </div>
     </div>
   );
 }

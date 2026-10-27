@@ -45,36 +45,7 @@ test("mobile Navigation öffnet und verlinkt alle Hauptseiten", async ({ page, i
   await expect(page).toHaveURL(/\/kursplan\/$/);
 });
 
-test("Check-up-Quiz: kompletter Durchlauf bis zur Erfolgsmeldung", async ({ page }) => {
-  await page.goto("/gesundheits-check/");
-  // Consent-Banner schließen — überlagert auf Mobile sonst die Quiz-Buttons
-  await page
-    .getByRole("dialog", { name: "Cookie-Einstellungen" })
-    .getByRole("button", { name: "Nur notwendige" })
-    .click();
-  await page.getByRole("button", { name: "🚀 Los geht's!" }).click();
-
-  // Alle Fragen beantworten (erste Option bzw. Zahl), bis der Kontakt-Schritt kommt
-  for (let i = 0; i < 30; i++) {
-    if (await page.locator("#checkup-name").isVisible().catch(() => false)) break;
-    const zahlenfeld = page.locator('input[type="number"]');
-    if (await zahlenfeld.isVisible()) {
-      await zahlenfeld.fill("80");
-    } else {
-      await page.locator('button[aria-pressed="false"]').first().click();
-    }
-    await page.getByRole("button", { name: "Weiter →" }).click();
-  }
-
-  await page.locator("#checkup-name").fill("Test Person");
-  await page.locator("#checkup-email").fill("test@example.com");
-  await page.locator("#checkup-telefon").fill("0151 12345678");
-  for (const checkbox of await page.locator('input[type="checkbox"]').all()) {
-    await checkbox.check();
-  }
-  await page.getByRole("button", { name: "🚀 Jetzt absenden" }).click();
-  await expect(page.getByText("Dein Check-up wurde erfolgreich übermittelt")).toBeVisible();
-});
+// Check-up-Quiz (27 Schritte, Versand, Fehlerfälle): tests/checkup.spec.ts
 
 test("Video lädt erst bei Sichtbarkeit (preload=none + IO-Autoplay)", async ({ page }) => {
   await page.goto("/");
