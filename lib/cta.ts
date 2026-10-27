@@ -11,19 +11,12 @@
  * Absicherung: tests/cta.spec.ts vergleicht jede gerenderte URL gegen diese
  * Konstanten und diese Konstanten gegen tests/fixtures/live-ctas.json.
  */
-const WHATSAPP_MITGLIED = "https://wa.me/492262752717?text=Ich%20m%C3%B6chte%20Mitglied%20werden.";
-
 export const CTA = {
   /** Header „Buche ein Probetraining“ */
   whatsappProbetraining:
     "https://wa.me/492262752717?text=Hallo%2C%20ich%20m%C3%B6chte%20ein%20Probetraining%20buchen%21",
   /** „Mitglied werden“ / Preiskarten „Buchen“ */
-  whatsappMitglied: WHATSAPP_MITGLIED,
-  /**
-   * @deprecated VORLÄUFIGER Alias auf whatsappMitglied, damit die alten Seiten bis
-   * zum Umbau (P1) bauen. Wird im Integrations-Commit entfernt.
-   */
-  whatsappVertrag: WHATSAPP_MITGLIED,
+  whatsappMitglied: "https://wa.me/492262752717?text=Ich%20m%C3%B6chte%20Mitglied%20werden.",
   /** „Kontakt über WhatsApp“, Fragen-Button, WhatsApp-Nummer im Kontakt */
   whatsappAllgemein: "https://wa.me/492262752717",
   /** BN-LP: Präfix der WhatsApp-URL, dahinter folgt der Aktionscode (siehe whatsappBlackNovember) */
@@ -42,9 +35,6 @@ export const CTA = {
   mailRecht: "mailto:info@functional-wiehl.de",
   /** Adresse im Kontakt-Block (live: ganzer Blurb verlinkt) */
   maps: "https://g.co/kgs/8WPjTLD",
-  /** @deprecated Routenplaner der alten /kontakt/-Seite, entfällt mit P1 */
-  mapsRoute:
-    "https://www.google.com/maps/dir/?api=1&destination=Functional+Wiehl+GmbH%2C+Wilhelm-Gr%C3%BCmer-Weg+18%2C+51674+Wiehl",
   instagram: "https://www.instagram.com/functionalwiehl/",
   facebook: "https://www.facebook.com/functionalwiehl/",
 } as const;
@@ -79,13 +69,4 @@ export const BETREUUNGSZEITEN = {
     { label: "Samstag", wert: "ohne Betreuung" },
     { label: "Betreuung So", wert: "10:00 – 14:00" },
   ],
-} as const;
-
-/**
- * @deprecated Alte Form für Footer, /kontakt/ und /24-7-fitnessstudio/ bis zum
- * Umbau in P1 – Werte kommen aus BETREUUNGSZEITEN, damit keine alten Zeiten mehr erscheinen.
- */
-export const OEFFNUNGSZEITEN = {
-  zugang: "24/7 Zugang – immer geöffnet",
-  betreuung: BETREUUNGSZEITEN.zeilen.map((z) => ({ tage: z.label, zeit: z.wert })),
 } as const;
