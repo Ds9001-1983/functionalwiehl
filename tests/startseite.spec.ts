@@ -258,7 +258,7 @@ test.describe("Inhalte", () => {
     ]) {
       await expect(kontakt).toContainText(text);
     }
-    await expect(kontakt.locator("video")).toHaveCount(1);
+    await expect(kontakt.getByAltText(/Luftaufnahme von Wiehl/)).toHaveCount(1);
   });
 });
 

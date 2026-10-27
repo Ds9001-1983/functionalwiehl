@@ -107,7 +107,8 @@ npm run check:smtp [-- --nur-env | -- --an <adresse>]   # SMTP-Login bzw. Testma
 - `npm run test:live` (`@live`, gegen die Live-Domain) hat noch keine Tests.
 - **CI:** Es gibt kein `.github/workflows`. Geprüft wird lokal vor jedem Push (SUPERBRAND-Regel).
 - Assets: `node scripts/fetch-wp-media.mjs` (WP-Media-API nach `assets/raw/`, nur solange WP
-  läuft), Video neu kodieren mit `bash scripts/encode-video.sh`.
+  läuft). Das Studio-Video ist seit 27.10.2026 durch das Standbild `public/img/studio-luftbild.jpg`
+  ersetzt (es blendete „14 Tage KOSTENLOS“ ein).
 
 ## Env-Variablen
 

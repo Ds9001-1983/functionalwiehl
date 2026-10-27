@@ -80,10 +80,6 @@ export default function BarrierefreiheitPage() {
           </p>
           <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
             <li>
-              Das eingebettete Studiovideo wird ohne Ton und ohne sprachliche Inhalte abgespielt; es
-              transportiert keine für das Verständnis nötigen Informationen.
-            </li>
-            <li>
               Die Beiträge im Bereich „Aktuelles“ stammen aus unserem Instagram-Konto. Videos (Reels)
               erscheinen dort nur als Vorschaubild mit einem Link zu Instagram; die Videos selbst und
               ihre Untertitel liegen bei Instagram. Die Bildbeschreibung folgt dem Text des jeweiligen

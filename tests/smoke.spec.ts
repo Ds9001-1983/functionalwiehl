@@ -89,12 +89,11 @@ test("Check-up-Quiz auf der Startseite: Durchlauf bis zur Erfolgsmeldung (Versan
   });
 });
 
-test("Video lädt erst bei Sichtbarkeit (preload=none + IO-Autoplay)", async ({ page }) => {
+test("Studio-Luftbild statt Video: kein <video>, Bild in Hero und #kontakt", async ({ page }) => {
   await page.goto("/");
-  // Das Studio-Video in #kontakt trägt data-inview (das Hero-Video ist ein separates,
-  // performance-optimiertes Element ohne IntersectionObserver).
-  const video = page.locator("#kontakt video[data-inview]");
-  await expect(video).toHaveAttribute("preload", "none");
-  await video.scrollIntoViewIfNeeded();
-  await expect(video).toHaveAttribute("data-inview", "true", { timeout: 10_000 });
+  // Das Video blendete „14 Tage KOSTENLOS“ ein und ist seit 27.10.2026 durch ein Standbild ersetzt.
+  await expect(page.locator("video")).toHaveCount(0);
+  const bilder = page.getByAltText("Luftaufnahme von Wiehl mit dem Schild von Functional Wiehl über dem Studio");
+  await expect(bilder).toHaveCount(2);
+  await expect(page.locator("#kontakt").getByAltText(/Luftaufnahme von Wiehl/)).toBeVisible();
 });

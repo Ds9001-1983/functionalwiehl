@@ -5,7 +5,7 @@ import { WhatsAppCta } from "@/components/cta-buttons";
 import { BlackNovemberTeaser } from "@/components/sections/black-november-teaser";
 import { FeatureGrid } from "@/components/sections/feature-grid";
 import { GalleryGrid } from "@/components/sections/gallery-grid";
-import { HeroVideo } from "@/components/sections/hero-video";
+import { StudioBild } from "@/components/sections/studio-bild";
 import { InstagramTeaser } from "@/components/sections/instagram-teaser";
 import { KontaktSection } from "@/components/sections/kontakt-section";
 import { PriceSection } from "@/components/sections/price-section";
@@ -71,14 +71,14 @@ export default function HomePage() {
             </ul>
           </div>
 
-          {/* Media-Kachel mit Studio-Loop + dezenter Akzent-Rahmen */}
+          {/* Media-Kachel mit Studio-Luftbild + dezenter Akzent-Rahmen */}
           <div className="group relative">
             <span
               aria-hidden="true"
               className="absolute -inset-3 -z-10 translate-x-3 translate-y-3 rounded-card border-2 border-cta/30"
             />
             <div className="aspect-video overflow-hidden rounded-card shadow-2xl lg:aspect-[4/5]">
-              <HeroVideo />
+              <StudioBild preload sizes="(min-width: 1024px) 40vw, 100vw" />
             </div>
           </div>
         </div>

@@ -4,18 +4,18 @@ import { CalendlyCta, PhoneIcon, WhatsAppCta, WhatsAppIcon } from "@/components/
 import { TrackedLink } from "@/components/tracked-link";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { BETREUUNGSZEITEN, CTA, KONTAKT } from "@/lib/cta";
-import { StudioVideo } from "./studio-video";
+import { StudioBild } from "./studio-bild";
 
 const linkStil = "font-semibold text-brand underline-offset-4 hover:underline";
 
 /**
  * #kontakt wie live: Öffnungszeiten (BETREUUNGSZEITEN), Kontakt & Anfahrt, die Buttons
- * „Kontakt über WhatsApp“ und „Jetzt Telefontermin vereinbaren“ sowie das Studio-Video
+ * „Kontakt über WhatsApp“ und „Jetzt Telefontermin vereinbaren“ sowie das Studio-Luftbild
  * unter „So findest du uns“.
  */
 export function KontaktSection({ index }: { index?: string }) {
   return (
-    // overflow-x-clip: der versetzte Zierrahmen am Video ragt mobil sonst 8 px über den Rand
+    // overflow-x-clip: der versetzte Zierrahmen am Bild ragt mobil sonst 8 px über den Rand
     <section id="kontakt" className="scroll-mt-24 overflow-x-clip bg-sand">
       <div className="container-site py-16 sm:py-20">
         <SectionHeading index={index} eyebrow="Kontakt" title="Kontakt & Öffnungszeiten" />
@@ -97,7 +97,9 @@ export function KontaktSection({ index }: { index?: string }) {
                 aria-hidden="true"
                 className="absolute -inset-3 -z-10 translate-x-3 translate-y-3 rounded-card border-2 border-brand/15"
               />
-              <StudioVideo />
+              <div className="aspect-video overflow-hidden rounded-card shadow-md">
+                <StudioBild sizes="(min-width: 1024px) 45vw, 100vw" />
+              </div>
             </div>
           </div>
         </div>
