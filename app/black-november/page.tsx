@@ -11,7 +11,7 @@ import { BnRuntimeScript } from "@/components/black-november/bn-runtime-script";
 import { BnSchritte } from "@/components/black-november/bn-schritte";
 import { BnSoftNavGuard } from "@/components/black-november/bn-soft-nav-guard";
 import { BnSticky } from "@/components/black-november/bn-sticky";
-import { BN_META, BN_SKIPLINK } from "@/components/black-november/inhalt";
+import { BN_META, BN_SKIPLINK } from "@/content/black-november";
 import { META_PIXEL_ID } from "@/lib/tracking";
 import "./bn.css";
 

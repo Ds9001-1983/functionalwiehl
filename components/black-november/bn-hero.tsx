@@ -1,8 +1,8 @@
 import Image from "next/image";
 import heroBild from "@/public/img/black-november/trainingsflaeche-img-0612.jpg";
 import { CTA } from "@/lib/cta";
+import { BN_HERO } from "@/content/black-november";
 import { BN_CTA_KLASSEN, BN_WRAP, BnCta } from "./bn-cta";
-import { BN_HERO } from "./inhalt";
 
 /**
  * Hero der LP. Live ist IMG_0612 ein CSS-Hintergrund mit Preload (768/1536 px); hier

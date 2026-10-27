@@ -1,5 +1,5 @@
+import { BN_STICKY_CTA } from "@/content/black-november";
 import { BnCta } from "./bn-cta";
-import { BN_STICKY_CTA } from "./inhalt";
 
 /**
  * Mobile Sticky-CTA (unter 900 px). Startet versteckt und ohne Fokus; die Runtime schaltet

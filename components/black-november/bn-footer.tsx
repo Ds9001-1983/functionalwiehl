@@ -1,7 +1,7 @@
 import { ConsentRevokeButton } from "@/components/consent/consent-banner";
 import { CTA } from "@/lib/cta";
+import { BN_FOOTER, BN_LINKS, BN_MAPS_URL } from "@/content/black-november";
 import { BN_WRAP } from "./bn-cta";
-import { BN_FOOTER, BN_LINKS, BN_MAPS_URL } from "./inhalt";
 
 const LINK = "text-white";
 

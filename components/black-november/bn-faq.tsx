@@ -1,8 +1,8 @@
 import { CTA } from "@/lib/cta";
+import { BN_FAQ, BN_MAPS_URL } from "@/content/black-november";
 import { BN_H2, BN_SEKTION_ALT, BN_WRAP } from "./bn-cta";
-import { BN_FAQ, BN_MAPS_URL } from "./inhalt";
 
-/** Natives <details> wie live (nicht faq-accordion.tsx): funktioniert ohne JS, +/– in bn.css */
+/** Natives <details> wie live (kein Accordion-Baustein): funktioniert ohne JS, +/– in bn.css */
 function Frage({ frage, children }: { frage: string; children: React.ReactNode }) {
   return (
     <details className="border-b border-bn-faq py-1">

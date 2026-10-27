@@ -1,5 +1,5 @@
+import { BN_ABSCHLUSS } from "@/content/black-november";
 import { BN_WRAP, BnCta } from "./bn-cta";
-import { BN_ABSCHLUSS } from "./inhalt";
 
 /**
  * Abschluss auf Gelb. Die Micro-Zeile hat live dieselbe Größe wie der Text darüber

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
+import { BN_RECHNUNG } from "@/content/black-november";
 import { BN_H2, BN_LEAD, BN_SEKTION, BN_WRAP } from "./bn-cta";
-import { BN_RECHNUNG } from "./inhalt";
 
 const ZELLE = "border-b border-[rgba(255,255,255,.14)] px-0 py-3 text-left";
 const WERT = "text-right font-extrabold whitespace-nowrap";

@@ -3,9 +3,9 @@ import cardioBild from "@/public/img/black-november/cardiobereich.jpg";
 import kurzhantelBild from "@/public/img/black-november/kurzhantel-bereich.jpg";
 import flaecheBild from "@/public/img/black-november/trainingsflaeche-img-0612.jpg";
 import { cn } from "@/lib/utils";
+import { BN_LEISTUNGEN } from "@/content/black-november";
 import { BN_H2, BN_LEAD, BN_SEKTION_ALT, BN_WRAP } from "./bn-cta";
 import { BnKartenSymbol } from "./bn-icons";
-import { BN_LEISTUNGEN } from "./inhalt";
 
 const FOTO = "w-full rounded-[14px] aspect-[4/3] object-cover";
 

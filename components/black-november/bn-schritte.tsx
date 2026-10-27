@@ -1,5 +1,5 @@
+import { BN_SCHRITTE } from "@/content/black-november";
 import { BN_H2, BN_LEAD, BN_SEKTION, BN_WRAP, BnCta } from "./bn-cta";
-import { BN_SCHRITTE } from "./inhalt";
 
 /** „So einfach geht's“: nummerierte Schritte (Zähler in bn.css) und zweiter CTA */
 export function BnSchritte() {
