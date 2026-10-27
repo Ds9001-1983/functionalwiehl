@@ -9,7 +9,7 @@ import { PhoneIcon, WhatsAppIcon } from "./cta-buttons";
 /**
  * Mobile Sticky-Bottom-Bar (~79 % der Besucher kommen mobil).
  * Erscheint nach 600 px Scroll, damit sie den Hero-CTA nicht doppelt.
- * Der Platz wird global über pb auf <body> (layout.tsx) reserviert → kein CLS,
+ * Der Platz wird über pb am Seitenrahmen (app/(site)/layout.tsx) reserviert → kein CLS,
  * Footer-Inhalte inkl. Cookie-Widerruf-Link werden nie verdeckt.
  * Varianten: /frauen-ab-50/ → Calendly statt WhatsApp (Zielgruppe ruft lieber an),
  * Rechtsseiten → keine Bar.

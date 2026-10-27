@@ -74,6 +74,13 @@ export const PAGES = {
       "Functional Wiehl, Wilhelm-Grümer-Weg 18, 51674 Wiehl: kostenlose Parkplätze, Bushaltestelle in 2 Minuten, barrierefrei. Schreib uns per WhatsApp oder ruf an.",
     path: "/kontakt/",
   },
+  koerpermasse: {
+    // Title wörtlich wie live (Stand 27.10.2026)
+    title: "Körpermaße | Functional - Dein Fitnessstudio in Wiehl",
+    description:
+      "Körpermaße Digital: 8 Körperumfänge in 2–3 Minuten erfassen – für ein optimal angepasstes Training bei Functional Wiehl.",
+    path: "/koerpermasse/",
+  },
   impressum: {
     title: "Impressum | Functional Wiehl",
     description: "Impressum der Functional Wiehl GmbH, Wilhelm-Grümer-Weg 18, 51674 Wiehl.",

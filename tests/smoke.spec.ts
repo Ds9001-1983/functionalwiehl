@@ -12,6 +12,7 @@ const SEITEN = [
   "/gesundheits-check/",
   "/ueber-uns/",
   "/kontakt/",
+  "/koerpermasse/",
   "/impressum/",
   "/datenschutz/",
   "/barrierefreiheit/",

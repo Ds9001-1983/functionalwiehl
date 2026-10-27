@@ -2,7 +2,7 @@
  * 301-Map für die 23 Alt-URLs der WordPress-Site (alle leben heute als
  * index-bare Orphan-Pages). Wird in next.config.ts eingespeist und beim
  * Domain-Umzug scharf — bis dahin versioniert und testbar.
- * /impressum/ und /datenschutz/ bleiben bestehen (kein Redirect).
+ * /impressum/, /datenschutz/ und /koerpermasse/ bleiben bestehen (kein Redirect).
  */
 export const REDIRECTS: { source: string; destination: string }[] = [
   { source: "/home/", destination: "/" },
@@ -21,7 +21,6 @@ export const REDIRECTS: { source: string; destination: string }[] = [
   { source: "/fitness-app/", destination: "/kursplan/" },
   { source: "/gewichtsmanagement/", destination: "/training-und-kurse/#ernaehrung" },
   { source: "/abnehmen/", destination: "/training-und-kurse/#ernaehrung" },
-  { source: "/koerpermasse/", destination: "/gesundheits-check/" },
   { source: "/best-ager/", destination: "/frauen-ab-50/" },
   { source: "/cookie-richtlinie-eu/", destination: "/datenschutz/" },
   // Offen: eigene AGB-Seite nötig? Bis zur Klärung → Impressum (docs/TODO-recht.md)
