@@ -173,6 +173,7 @@ P0 Fundament → Worktrees parallel → Merge **P2 → P3 → P1**, je Rebase au
 - C6 Löschfrist für Check-up- und Körpermaße-Mails (Vorschlag 6 Monate, so steht es im Hinweis der Körpermaße-Mail, `content/koerpermasse.ts` → `LOESCHHINWEIS`)
 - C7 Text der Art.-9-Einwilligung zu den Körpermaßen (`EINWILLIGUNG_KOERPERMASSE`)
 - C13 Texte des Einwilligungsbanners (Kategorien Statistik und Marketing) mit der DSE
+- C14 Rechtsgrundlagen der Formulare außerhalb von Art. 9 (Check-up lit. b, Körpermaße lit. a, siehe `docs/TODO-recht.md`)
 - Hinweis: Der Pixel läuft auf der LP ohne Einwilligung (Entscheidung Dennis, Risiko § 25 TDDDG bewusst getragen, endet mit der LP)
 - nicht blockierend: C8 BFSG-Kennzahlen, C12 alte WordPress-Einsendungen
 

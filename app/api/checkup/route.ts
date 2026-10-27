@@ -151,7 +151,8 @@ function checkupMail(daten: CheckupDaten, eingang: Date): { betreff: string; tex
     `E-Mail: ${email}`,
     `Telefon: ${telefon}`,
     "",
-    `EINWILLIGUNGEN (beim Absenden erteilt, Text-Stand ${EINWILLIGUNG_STAND})`,
+    // Häkchen 1 ist eine Kenntnisnahme, keine Einwilligung (DSE: übrige Angaben nach lit. b)
+    `BESTÄTIGUNG UND EINWILLIGUNG (beim Absenden angekreuzt, Text-Stand ${EINWILLIGUNG_STAND})`,
     `[x] ${EINWILLIGUNG.datenschutz}`,
     `[x] ${EINWILLIGUNG.gesundheit}`,
     "",

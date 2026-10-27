@@ -4,6 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import {
   CHECKUP_TEXTE as T,
   EINWILLIGUNG,
+  EINWILLIGUNG_STAND,
   KEINE_ANGABE,
   pfadFuer,
   type CheckupAntworten,
@@ -170,6 +171,8 @@ test.describe("Quiz im Browser", () => {
       `Name: ${name}`,
       "E-Mail: muskel@example.com",
       "Telefon: 0151 / 123 456-78",
+      `BESTÄTIGUNG UND EINWILLIGUNG (beim Absenden angekreuzt, Text-Stand ${EINWILLIGUNG_STAND})`,
+      `[x] ${EINWILLIGUNG.datenschutz}`,
       `[x] ${EINWILLIGUNG.gesundheit}`,
       "Dein Beruf: sitzend",
       "Deine Trainingsziele: Muskeln & Körperstruktur",

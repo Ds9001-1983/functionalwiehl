@@ -375,9 +375,11 @@ export default function DatenschutzPage() {
             <p>
               Ein großer Teil dieser Angaben sind Gesundheitsdaten und damit besondere Kategorien
               personenbezogener Daten (Art. 9 DSGVO). Wir verarbeiten sie nur mit Ihrer ausdrücklichen
-              Einwilligung, die Sie im Formular gesondert erteilen (Art. 9 Abs. 2 lit. a DSGVO, für die
-              übrigen Angaben Art. 6 Abs. 1 lit. a DSGVO). Wir nutzen die Angaben allein, um Ihnen eine
-              passende Trainingsempfehlung zu geben und Sie dazu zu kontaktieren.
+              Einwilligung, die Sie im Formular gesondert erteilen (Art. 9 Abs. 2 lit. a DSGVO). Die
+              übrigen Angaben, etwa Name, E-Mail-Adresse und Telefonnummer, verarbeiten wir zur
+              Bearbeitung Ihrer Anfrage wie unter „{ABSCHNITTE.kontakt}“ beschrieben (Art. 6 Abs. 1
+              lit. b DSGVO). Wir nutzen die Angaben allein, um Ihnen eine passende Trainingsempfehlung zu
+              geben und Sie dazu zu kontaktieren.
             </p>
             <p>
               Nach dem Absenden leitet unser Server (Vercel, Region Frankfurt am Main) Ihre Angaben
@@ -403,8 +405,9 @@ export default function DatenschutzPage() {
             <p>
               Weil Körpermaße Rückschlüsse auf Ihre Gesundheit zulassen können, verarbeiten wir sie
               vorsorglich nur mit Ihrer ausdrücklichen Einwilligung, die Sie im Formular gesondert
-              erteilen (Art. 9 Abs. 2 lit. a DSGVO). Im Übrigen dient die Verarbeitung der Durchführung
-              Ihrer Mitgliedschaft (Art. 6 Abs. 1 lit. b DSGVO).
+              erteilen (Art. 9 Abs. 2 lit. a DSGVO). Für Ihren Namen und Ihre Handynummer gilt die
+              Einwilligung, die Sie im Formular mit dem ersten Häkchen erteilen (Art. 6 Abs. 1 lit. a
+              DSGVO).
             </p>
             <p>
               Übermittlung und Zugriff erfolgen wie beim Check-up: Unser Server leitet die Angaben

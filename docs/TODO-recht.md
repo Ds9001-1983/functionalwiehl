@@ -65,6 +65,16 @@ Quellen: `app/(site)/impressum/page.tsx`, `app/(site)/datenschutz/page.tsx`,
       Seitennutzung mit Cookies; Daten können an Google in den USA gehen“ (vorher „anonym“, falsch
       wegen `_ga`), Marketing = „Erfolgsmessung und gezielte Ausspielung unserer Anzeigen … Daten
       können an Meta in den USA gehen“ (vorher nur Erfolgsmessung, die DSE nennt beide Zwecke).
+- [ ] **C14** Rechtsgrundlagen der Formulare für die Angaben außerhalb von Art. 9 (zusammen mit C7).
+      Die DSE nannte beim Check-up eine Einwilligung nach Art. 6 Abs. 1 lit. a, das Formular holt
+      dafür aber keine ein (Häkchen 1 ist eine Kenntnisnahme, das Art.-9-Häkchen deckt nur
+      Gesundheitsdaten). Bei den Körpermaßen umgekehrt: Häkchen 1 ist live eine Einwilligung („Ich
+      willige in die Verarbeitung meiner Daten gemäß Datenschutzerklärung ein“), die DSE nannte lit. b.
+      **Entwurf seit 27.10.2026, die DSE folgt jeweils dem Formular:** Check-up übrige Angaben lit. b
+      (wie „Kontaktanfragen“), Mail-Überschrift „BESTÄTIGUNG UND EINWILLIGUNG“; Körpermaße Name und
+      Handynummer lit. a (Live-Wortlaut der Checkbox bleibt). Alternativen: das Art.-9-Häkchen des
+      Check-ups auf alle Angaben erweitern, bzw. Häkchen 1 der Körpermaße zur Kenntnisnahme machen und
+      bei lit. b bleiben (weicht vom Live-Wortlaut ab).
 - [ ] **Pixel ohne Einwilligung auf `/black-november/`** (Entscheidung Dennis, Risiko nach § 25
       Abs. 1 TDDDG): Conny muss davon wissen. Die DSE beschreibt es offen und nennt lit. f als
       Rechtsgrundlage. Gilt nur bis zum Ende der Aktion; danach den Absatz „Ausnahme“ und den
