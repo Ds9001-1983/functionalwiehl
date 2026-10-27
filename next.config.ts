@@ -30,6 +30,8 @@ const INDEXIERBARE_HOSTS ="(?:www\\.)?functional-wiehl\\.de";
 const NOINDEX = { key: "X-Robots-Tag", value: "noindex, nofollow" };
 
 const nextConfig: NextConfig = {
+  // Kein „X-Powered-By: Next.js“ (verrät nur das Framework, Doku 05-config/01-next-config-js/poweredByHeader.md)
+  poweredByHeader: false,
   // Formgleich mit WordPress → keine Redirect-Ketten beim Domain-Umzug
   trailingSlash: true,
   // Next ergänzt den Slash NICHT mehr selbst (sonst 308 auch auf /wp-json/sb-bn/v1/click/BN-…

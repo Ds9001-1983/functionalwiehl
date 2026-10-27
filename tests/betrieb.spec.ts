@@ -41,6 +41,8 @@ test.describe("Sicherheits-Header und noindex (Abnahme-Build)", () => {
       }
       // HSTS setzt Vercel selbst (nur für die jeweilige Subdomain) – kein zweiter Header von uns
       expect(headers["strict-transport-security"], pfad).toBeUndefined();
+      // kein Hinweis auf das Framework (poweredByHeader: false)
+      expect(headers["x-powered-by"], pfad).toBeUndefined();
     }
   });
 
