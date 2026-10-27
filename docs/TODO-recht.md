@@ -71,7 +71,8 @@ Quellen: `app/(site)/impressum/page.tsx`, `app/(site)/datenschutz/page.tsx`,
       Klick auf den WhatsApp-Button“. Nach dem WP-Aus kommt serverseitig nur noch der Lead aus n8n,
       außer „Conversions API mit Meta“ (Ein-Klick-Integration) ist im Events Manager aktiv
       (design-review (f)-5). Ist sie aus, die beiden Ereignisse aus dem Satz streichen.
-- [ ] **Paket P2 (BN):** Die DSE setzt voraus: GA4 nicht auf der LP, `bn_fbc` und `_fbp`/`_fbc` im
+- [x] **Paket P2 (BN)**, im Integrationsstand vom 27.10. gegen den Code geprüft (`lib/black-november/runtime.ts`,
+      `components/consent/analytics-scripts.tsx`, `lib/tracking.ts`). Die DSE setzt voraus: GA4 nicht auf der LP, `bn_fbc` und `_fbp`/`_fbc` im
       Klickspeicher nur mit Marketing-Einwilligung, `fbclid` immer, TTL 60 Tage ab letztem Klick mit
       Deckel 10.12.2026, Felder wie im Vertrag (design-p2 Abschnitt 3), Pixel außerhalb der LP mit
       `autoConfig:false` und nur `FW_*`-Ereignissen, Formulare melden nichts an Meta.
@@ -88,8 +89,9 @@ Quellen: `app/(site)/impressum/page.tsx`, `app/(site)/datenschutz/page.tsx`,
 - [ ] **Klick-Migration:** Der Satz „Klickdaten aus der Zeit vor der Umstellung … übernommen“ stimmt
       erst nach Migrationslauf 1 (`npm run bn:migrate`).
 - [ ] **Generator-Hinweis** (Weiß & Partner): Lizenz bzw. Pflicht zur Namensnennung des Musters prüfen.
-- [ ] **Paket P1:** `lib/seo.ts` beschreibt Impressum und DSE noch mit „Functional Wiehl GmbH“, der
-      Footer ebenso; auf „Functional-Wiehl GmbH“ umstellen.
+- [x] **Paket P1:** `lib/seo.ts` beschreibt Impressum und DSE mit `KONTAKT.firma` („Functional-Wiehl GmbH“).
+      Der Footer nennt wie live nur die Marke („© … Functional Wiehl.“), das Logo-Alt „Logo Functional
+      Wiehl GmbH“ ist ebenfalls der Live-Text.
 
 ## Sonstiges
 

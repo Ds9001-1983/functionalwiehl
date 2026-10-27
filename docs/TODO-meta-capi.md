@@ -1,36 +1,44 @@
-# TODO: Meta Conversions API (CAPI)
+# Meta: Pixel, Conversions API und Event-Zuordnung
 
-**Status:** bewusst NICHT im Prototyp (Plan §4) · Browser-Pixel `965083147995308` ist consent-gated eingebaut.
+**Stand 27.10.2026 (Go-live-Paket, Integration).** Browser-Pixel `965083147995308`, GA4
+`G-H41716E7JE`. Code: `lib/tracking.ts`, `lib/meta-pixel.ts`, `lib/black-november/runtime.ts`,
+`components/consent/*`. Abgesichert durch `tests/tracking.spec.ts`, `tests/consent.spec.ts` und
+`tests/black-november.spec.ts` (Tracker werden in der Abnahme immer abgefangen).
 
-## Warum noch nicht
+## Event-Zuordnung
 
-- Das bestehende CAPI-Setup läuft laut Performance-Audit sauber auf der
-  WordPress-Instanz — es bleibt aktiv, bis die Domain umzieht.
-- Server-Side-Events vom Prototyp (Vercel-Preview-Domain) würden die
-  Conversion-Daten verfälschen und erfordern die Domain-Verifizierung,
-  die erst nach dem Umzug möglich ist.
+| Wo | Pixel | Events |
+|---|---|---|
+| `/black-november/` | lädt **ohne Einwilligung** (Entscheidung Dennis), `autoConfig` wie live | PageView, ViewContent, `BN_Engaged` (15 s und 50 % gescrollt), `Contact` mit eventID `bnc-<Code>` beim WhatsApp-Klick |
+| übrige Website | erst nach Marketing-Einwilligung, `autoConfig` aus | PageView, Custom Events `FW_WhatsApp_Klick` (`ziel` = probetraining/mitglied/allgemein), `FW_Anruf_Klick`, `FW_Mail_Klick`, `FW_Telefontermin_Klick` |
+| n8n eHhcCrI24Jae2BQG | serverseitig, Graph-API v26.0 | `Lead` (`action_source` chat) mit fbc, fbp, IP und UA aus dem Klickspeicher (unten) |
 
-## Migrationsweg (nach Domain-Umzug)
+- Kein Website-Event heißt `Contact` oder `Lead`: Die BN26-Anzeigen optimieren auf Contact, Klicks
+  ohne Aktionscode würden das Ergebnis verfälschen. Custom Events lassen sich später gezielt zu
+  Custom Conversions machen.
+- Check-up und Körpermaße melden nichts an Meta (Nähe zu Art. 9 DSGVO). An GA4 geht nur
+  `checkup_submit` ohne Inhalte und nur mit Statistik-Einwilligung.
+- GA4 mit Consent Mode v2 im Basic Mode: `gtag` existiert erst nach der Statistik-Einwilligung,
+  ad_* bleiben denied, ohne Google Signals. Auf der LP lädt GA4 nie.
+- Eine eigene CAPI der Website gibt es nicht. Das CAPI-Setup auf der WP-Instanz (Audit vom
+  12.06.2026) endet mit der WP-Sperre.
 
-1. Domain functional-wiehl.de im Meta Business Manager (neu) verifizieren.
-2. CAPI-Access-Token erzeugen → Vercel-Env `META_CAPI_TOKEN`.
-3. Route Handler `/api/track` anlegen: nimmt `event_id` (crypto.randomUUID im
-   Client), Event-Name, `_fbp`/`_fbc`-Cookies entgegen und forwarded an
-   `graph.facebook.com/v21.0/965083147995308/events`.
-4. `lib/tracking.ts`: dieselbe `event_id` an `fbq("track", …, { eventID })`
-   übergeben → Browser/Server-Deduplikation greift ab Tag 1.
-5. Events-Mapping wie im Event-Glossar (Plan §4): whatsapp_click→Lead/Contact,
-   calendly_click→Schedule, checkup_submit→CompleteRegistration.
-6. WP-seitiges CAPI deaktivieren (Doppelzählung vermeiden).
+## Offen (lesend in Meta prüfen, Dennis)
+
+- [ ] Ist im Events Manager „Conversions API mit Meta“ (Ein-Klick-Integration) aktiv? Davon hängen
+      der CAPI-Absatz der DSE und mögliche Doppelzählungen ab (design-review (f)-5).
+- [ ] Automatische Events bzw. automatischer erweiterter Abgleich: Die LP läuft wie live mit
+      `autoConfig`. Prüfen, dass das Contact nicht verwässert und keine Formulareingaben erfasst.
+- [ ] Hängt am Google-Container `GT-NMDMXSTT` ein Google-Ads-Konto?
 
 ## Ebenfalls beim Cutover (Tracking)
 
-- [ ] Matomo: läuft self-hosted auf der WP-Instanz (Site-ID 1). Entscheidung:
+- [ ] Matomo: läuft self-hosted auf der WP-Instanz (Site-ID 1) und fällt mit WP weg. Entscheidung:
       Matomo Cloud / eigener Host / entfällt. Angebot Stufe 1 verspricht
       „Ziele in Matomo definieren" — mit Kunde klären, ob Matomo nach dem
       WP-Aus weiterbetrieben wird.
 - [ ] GA4-Property `G-H41716E7JE`: Key Events anlegen für `whatsapp_click`,
-      `tel_click`, `calendly_click`, `checkup_submit` (Stufe 1 des Angebots).
+      `tel_click`, `calendly_click`, `mail_click`, `checkup_submit` (Stufe 1 des Angebots).
 
 ## Klickspeicher für n8n (BN26, Next.js statt WordPress)
 

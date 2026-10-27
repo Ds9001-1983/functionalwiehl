@@ -89,7 +89,7 @@ P0 Fundament → Worktrees parallel → Merge **P2 → P3 → P1**, je Rebase au
 
 ## Schritt 3 – Integration und Preview
 
-- [ ] K: Integrations-Commit (README, Alias `CTA.whatsappVertrag` entfernen), `npm run abnahme` grün, Bericht an D.
+- [x] K: Integrations-Commit (README, Alias `CTA.whatsappVertrag` entfernen), `npm run abnahme` grün, Bericht an D. Branch `golive/integration`, per Fast-Forward nach `main` (27.10.2026, noch nicht gepusht).
 - [ ] K nach OK von D: Push nach `main` (Account Ds9001-1983). Vercel baut die Preview mit noindex.
 
 **Prüfungen auf der Preview** (K, Header `x-vercel-protection-bypass: <Token>` bei jedem curl; `$P` = Preview-URL)
