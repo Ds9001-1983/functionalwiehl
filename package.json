@@ -6,7 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "playwright test",
+    "test:live": "PW_BASE_URL=https://functional-wiehl.de playwright test --grep @live",
+    "check:redirects": "node scripts/check-redirects.mjs",
+    "check:smtp": "node --env-file-if-exists=.env.local --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/smtp-check.mjs",
+    "bn:migrate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/bn-migrate-clicks.mjs",
+    "abnahme": "npm run typecheck && npm run lint && npm run build && npm run test"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
@@ -16,6 +23,7 @@
     "lenis": "^1.3.23",
     "lucide-react": "^1.17.0",
     "next": "16.4.3",
+    "nodemailer": "^10.2.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "shadcn": "^4.11.0",
