@@ -35,7 +35,7 @@ export function HeroVideo() {
       playsInline
       preload="none"
       poster="/video/studio-loop-poster.jpg"
-      aria-label="Rundgang durch das Studio von Functional Wiehl"
+      aria-label="Drohnenflug über Wiehl bis zum Studio von Functional Wiehl"
       className="h-full w-full object-cover"
     >
       <source src="/video/studio-loop.mp4" type="video/mp4" />

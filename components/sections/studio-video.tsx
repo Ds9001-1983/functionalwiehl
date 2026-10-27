@@ -43,7 +43,7 @@ export function StudioVideo() {
       playsInline
       preload="none"
       poster="/video/studio-loop-poster.jpg"
-      aria-label="Rundgang durch das Studio von Functional Wiehl"
+      aria-label="Drohnenflug über Wiehl bis zum Studio von Functional Wiehl"
       className="aspect-video w-full rounded-card object-cover shadow-md"
       data-inview={inView}
     >
