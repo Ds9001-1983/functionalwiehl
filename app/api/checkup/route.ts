@@ -94,8 +94,9 @@ function zaehleImSpeicher(schluessel: string): { anzahl: number; restS: number }
 async function begrenzeRate(headers: Headers): Promise<{ erlaubt: boolean; restS: number }> {
   const grenze = Number(process.env.FORM_RATE_LIMIT);
   const maximum = Number.isInteger(grenze) && grenze > 0 ? grenze : 5;
-  // Schlüssel ist ein HMAC der IP (RATE_LIMIT_SECRET), nie die IP selbst
-  const schluessel = `rl:checkup:${ipSchluessel(clientIp(headers))}`;
+  // Schlüssel ist ein HMAC der IP (RATE_LIMIT_SECRET), nie die IP selbst. Je Umgebung getrennt
+  // wie bei den Körpermaßen, Preview und Production teilen sich die Upstash-DB.
+  const schluessel = `rl:${process.env.VERCEL_ENV || "lokal"}:checkup:${ipSchluessel(clientIp(headers))}`;
 
   let stand: { anzahl: number; restS: number } | undefined;
   const pipeline = upstashAusEnv(process.env, 1_500);
