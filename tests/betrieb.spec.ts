@@ -1,11 +1,13 @@
+import { execFile } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { promisify } from "node:util";
 import { expect, test } from "@playwright/test";
 import { matchHas } from "next/dist/shared/lib/router/utils/prepare-destination";
 import nextConfig from "../next.config";
 
 /**
- * Betrieb: Sicherheits-Header, noindex nach Host und vercel.json.
+ * Betrieb: Sicherheits-Header, noindex nach Host, vercel.json und scripts/smtp-check.mjs.
  * Alles reine HTTP- bzw. Unit-Prüfungen → nur im Projekt desktop.
  */
 test.skip(({ isMobile }) => isMobile, "reine HTTP- und Unit-Prüfung, einmal genügt");
@@ -119,4 +121,81 @@ test("vercel.json: Functions in Frankfurt (fra1)", () => {
   expect(config.$schema).toBe("https://openapi.vercel.sh/vercel.json");
   expect(config.framework).toBe("nextjs");
   expect(config.regions).toEqual(["fra1"]);
+});
+
+test.describe("scripts/smtp-check.mjs", () => {
+  type Lauf = { code: number; ausgabe: string };
+
+  /** Startet das Skript mit genau dieser Env (keine Werte aus der Shell oder .env.local) */
+  async function smtpCheck(env: Record<string, string>, args: string[] = []): Promise<Lauf> {
+    try {
+      const { stdout, stderr } = await promisify(execFile)(
+        process.execPath,
+        ["--disable-warning=MODULE_TYPELESS_PACKAGE_JSON", "scripts/smtp-check.mjs", ...args],
+        {
+          cwd: wurzel,
+          env: { NODE_ENV: "test", PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "", ...env },
+          timeout: 20_000,
+        }
+      );
+      return { code: 0, ausgabe: stdout + stderr };
+    } catch (err) {
+      const e = err as { code?: number; stdout?: string; stderr?: string };
+      return { code: typeof e.code === "number" ? e.code : -1, ausgabe: `${e.stdout ?? ""}${e.stderr ?? ""}` };
+    }
+  }
+
+  const PASSWORT = "kein-echtes-passwort-4711";
+  const DUMMY = {
+    SMTP_HOST: "127.0.0.1",
+    SMTP_PORT: "9", // discard, lokal geschlossen → sofortiger Verbindungsfehler
+    SMTP_USER: "gym@example.invalid",
+    SMTP_PASS: PASSWORT,
+    SMTP_FROM: "Functional Wiehl Website <gym@example.invalid>",
+    FORM_TO: "gym@example.invalid",
+    ALERT_TO: "alarm@example.invalid",
+  };
+
+  test("ohne SMTP-Env: Exit 1 mit Hinweis auf .env.local", async () => {
+    const lauf = await smtpCheck({});
+    expect(lauf.code).toBe(1);
+    expect(lauf.ausgabe).toContain("Mailversand nicht konfiguriert: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM");
+    expect(lauf.ausgabe).toContain(".env.local");
+  });
+
+  test("falscher Aufruf: Exit 2", async () => {
+    expect((await smtpCheck(DUMMY, ["--an", "keine-adresse"])).code).toBe(2);
+    expect((await smtpCheck(DUMMY, ["--an", "a@example.invalid,b@example.invalid"])).code).toBe(2);
+    expect((await smtpCheck(DUMMY, ["--unbekannt"])).code).toBe(2);
+  });
+
+  test("--nur-env: warnt vor falschem Host, Port, Absender und MAIL_TRANSPORT, ohne zu verbinden", async () => {
+    const lauf = await smtpCheck(
+      {
+        ...DUMMY,
+        SMTP_HOST: "mail.functional-wiehl.de",
+        SMTP_PORT: "25",
+        SMTP_FROM: "Website <info@example.invalid>",
+        MAIL_TRANSPORT: "json",
+        ALERT_TO: "",
+      },
+      ["--nur-env"]
+    );
+    expect(lauf.code).toBe(0);
+    expect(lauf.ausgabe).toContain("alfa3102.alfahosting-server.de");
+    expect(lauf.ausgabe).toContain("SMTP_PORT=25");
+    expect(lauf.ausgabe).toContain("weicht vom Login SMTP_USER ab");
+    expect(lauf.ausgabe).toContain("MAIL_TRANSPORT=json");
+    expect(lauf.ausgabe).toContain("ALERT_TO fehlt");
+    expect(lauf.ausgabe).toContain("Keine Verbindung aufgebaut");
+    expect(lauf.ausgabe).not.toContain(PASSWORT);
+  });
+
+  test("SMTP nicht erreichbar: Exit 1, nur Fehlercode, kein Passwort", async () => {
+    const lauf = await smtpCheck(DUMMY, ["--an", "test@example.invalid"]);
+    expect(lauf.code).toBe(1);
+    expect(lauf.ausgabe).toMatch(/^SMTP-Fehler: [A-Z0-9/]+$/m);
+    expect(lauf.ausgabe).not.toContain("Testmail an");
+    expect(lauf.ausgabe).not.toContain(PASSWORT);
+  });
 });
