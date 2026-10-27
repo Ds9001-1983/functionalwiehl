@@ -6,13 +6,15 @@ import { CTA } from "@/lib/cta";
 import { TrackedLink } from "./tracked-link";
 import { PhoneIcon, WhatsAppIcon } from "./cta-buttons";
 
+/** Seiten ohne Leiste: Rechtsseiten und das Mitglieder-Tool Körpermaße */
+const OHNE_LEISTE = ["/impressum", "/datenschutz", "/koerpermasse"];
+
 /**
- * Mobile Sticky-Bottom-Bar (~79 % der Besucher kommen mobil).
+ * Mobile Sticky-Bottom-Bar (~79 % der Besucher kommen mobil): Telefon und
+ * „Mitglied werden“ (CTA.whatsappMitglied, wie die Preiskarten).
  * Erscheint nach 600 px Scroll, damit sie den Hero-CTA nicht doppelt.
  * Der Platz wird über pb am Seitenrahmen (app/(site)/layout.tsx) reserviert → kein CLS,
  * Footer-Inhalte inkl. Cookie-Widerruf-Link werden nie verdeckt.
- * Varianten: /frauen-ab-50/ → Calendly statt WhatsApp (Zielgruppe ruft lieber an),
- * Rechtsseiten → keine Bar.
  */
 export function StickyCtaBar() {
   const pathname = usePathname();
@@ -25,9 +27,7 @@ export function StickyCtaBar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  if (pathname.startsWith("/impressum") || pathname.startsWith("/datenschutz")) return null;
-
-  const calendlyPrimary = pathname.startsWith("/frauen-ab-50");
+  if (OHNE_LEISTE.some((pfad) => pathname.startsWith(pfad))) return null;
 
   return (
     <div
@@ -49,30 +49,16 @@ export function StickyCtaBar() {
           <PhoneIcon className="size-5" />
         </TrackedLink>
 
-        {calendlyPrimary ? (
-          <TrackedLink
-            href={CTA.calendly}
-            target="_blank"
-            rel="noopener"
-            event="calendly_click"
-            params={{ position: "sticky_bar" }}
-            tabIndex={visible ? 0 : -1}
-            className="flex h-12 flex-1 items-center justify-center rounded-pill bg-brand text-[15px] font-bold text-cream"
-          >
-            Telefontermin vereinbaren
-          </TrackedLink>
-        ) : (
-          <TrackedLink
-            href={CTA.whatsappProbetraining}
-            event="whatsapp_click"
-            params={{ position: "sticky_bar", preset: "probetraining" }}
-            tabIndex={visible ? 0 : -1}
-            className="flex h-12 flex-1 items-center justify-center gap-2 rounded-pill bg-cta text-[15px] font-bold text-cta-foreground"
-          >
-            <WhatsAppIcon className="size-4.5" />
-            14 TAGE kostenlos
-          </TrackedLink>
-        )}
+        <TrackedLink
+          href={CTA.whatsappMitglied}
+          event="whatsapp_click"
+          params={{ position: "sticky_bar", preset: "mitglied" }}
+          tabIndex={visible ? 0 : -1}
+          className="flex h-12 flex-1 items-center justify-center gap-2 rounded-pill bg-cta text-[15px] font-bold text-cta-foreground"
+        >
+          <WhatsAppIcon className="size-4.5" />
+          Mitglied werden
+        </TrackedLink>
       </div>
     </div>
   );

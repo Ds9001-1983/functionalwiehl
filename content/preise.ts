@@ -1,52 +1,66 @@
-/** Tarife 1:1 von der Live-Site (Stand 12.06.2026). Preise pro Woche. */
+/** Tarife und Extras wörtlich von der Live-Startseite (#preise, Stand 27.10.2026). Preise pro Monat. */
 export type Tarif = {
   id: string;
   name: string;
-  preisProWoche: string;
+  preis: string;
+  einheit: "pro Monat";
   laufzeit: string;
-  features: string[];
-  hervorgehoben?: boolean;
-  ctaLabel: string;
+  zusatz: string[];
 };
 
-export const STARTGEBUEHR_HINWEIS = "Startgebühr 79,00 € einmalig";
+/** Fußzeile jeder Preiskarte, live in Großbuchstaben (per CSS, damit Screenreader nicht buchstabieren) */
+export const STARTGEBUEHR_HINWEIS = "Startgebühr 79,00 Euro einmalig";
+
+const GETRAENKEFLAT_ZUBUCHBAR = "Getränkeflat zubuchbar (8,70 € / Monat)";
 
 export const TARIFE: Tarif[] = [
   {
     id: "monatlich",
     name: "Monatlich",
-    preisProWoche: "12,80 €",
+    preis: "59,00 €",
+    einheit: "pro Monat",
     laufzeit: "monatlich kündbar",
-    features: ["Alle Geräte & Trainingsflächen", "Alle Gruppenkurse", "Getränkeflatrate zubuchbar"],
-    ctaLabel: "Plan wählen",
+    zusatz: [GETRAENKEFLAT_ZUBUCHBAR],
   },
   {
     id: "12-monate",
     name: "12 Monate",
-    preisProWoche: "8,85 €",
+    preis: "45,00 €",
+    einheit: "pro Monat",
     laufzeit: "12 Monate Laufzeit",
-    features: ["Alle Geräte & Trainingsflächen", "Alle Gruppenkurse", "Getränkeflatrate zubuchbar"],
-    hervorgehoben: true,
-    ctaLabel: "Plan wählen",
+    zusatz: [GETRAENKEFLAT_ZUBUCHBAR],
   },
   {
     id: "24-monate",
     name: "24 Monate",
-    preisProWoche: "8,45 €",
+    preis: "39,90 €",
+    einheit: "pro Monat",
     laufzeit: "24 Monate Laufzeit",
-    features: ["Alle Geräte & Trainingsflächen", "Alle Gruppenkurse", "Getränkeflatrate zubuchbar"],
-    ctaLabel: "Plan wählen",
+    zusatz: [GETRAENKEFLAT_ZUBUCHBAR],
   },
   {
     id: "studenten",
-    name: "Studententarif",
-    preisProWoche: "8,00 €",
+    // weiches Trennzeichen wie live (&shy;), sonst bricht das Wort in schmalen Karten hart um
+    name: "Studenten­abo",
+    preis: "37,00 €",
+    einheit: "pro Monat",
     laufzeit: "12 Monate Laufzeit",
-    features: [
-      "Alle Geräte & Trainingsflächen",
-      "Alle Gruppenkurse",
-      "Getränkeflatrate inklusive",
-    ],
-    ctaLabel: "Studententarif",
+    zusatz: ["inkl. Getränkeflatrate", "nur mit Nachweis"],
   },
 ];
+
+export const EXTRAS_TITEL = "Einmalig & Extras";
+export const EXTRAS_UNTERTITEL = "Ohne Vertrag trainieren oder dein Abo ergänzen";
+
+export type Extra = { name: string; hinweis?: string; preis: string };
+
+export const EXTRAS: Extra[] = [
+  { name: "Startgebühr", hinweis: "einmalig, für alle Abos", preis: "79,00 €" },
+  { name: "Chip-Kaution", preis: "20,00 €" },
+  { name: "Getränkeflat", hinweis: "zu jedem Abo zubuchbar", preis: "8,70 € / Monat" },
+  { name: "Tageskarte", hinweis: "zzgl. 20 € Chip-Kaution", preis: "8,00 €" },
+  { name: "10er-Karte", hinweis: "zzgl. 20 € Chip-Kaution", preis: "80,00 €" },
+];
+
+/** Button unter den Extras → WhatsApp ohne vorausgefüllten Text */
+export const FRAGEN_LABEL = "Hast du Fragen? Stelle sie per WhatsApp.";

@@ -1,14 +1,15 @@
 /**
- * Hauptnavigation — in eigenem, framework-neutralem Modul, damit sowohl
- * Server- (SiteFooter) als auch Client-Komponenten (SiteHeader, MobileNav)
- * das echte Array importieren (nicht nur eine Client-Referenz).
+ * Hauptnavigation wie live (menu-functional2026): Anker auf dem One-Pager, immer in der
+ * Slash-Form "/#…", damit sie auch von Körpermaße und Rechtsseiten funktionieren.
+ * Großschreibung wie live nur per CSS (uppercase), damit Screenreader nicht buchstabieren.
+ * In eigenem, framework-neutralem Modul, damit Server- (SiteFooter) und Client-Komponenten
+ * (SiteHeader, MobileNav) das echte Array importieren.
  */
 export const NAV_ITEMS = [
-  { label: "Training & Kurse", href: "/training-und-kurse/" },
-  { label: "Personal Training", href: "/personal-training/" },
-  { label: "24/7-Studio", href: "/24-7-fitnessstudio/" },
-  { label: "Kursplan", href: "/kursplan/" },
+  { label: "Gym", href: "/" },
+  { label: "Leistungen", href: "/#leistung" },
+  { label: "Aktuelles", href: "/#aktuelles" },
   { label: "Preise", href: "/#preise" },
-  { label: "Über uns", href: "/ueber-uns/" },
-  { label: "Kontakt", href: "/kontakt/" },
+  { label: "Check up", href: "/#checkup" },
+  { label: "Kontakt", href: "/#kontakt" },
 ] as const;

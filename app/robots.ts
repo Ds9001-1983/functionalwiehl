@@ -8,7 +8,8 @@ export default function robots(): MetadataRoute.Robots {
     return { rules: { userAgent: "*", disallow: "/" } };
   }
   return {
-    rules: { userAgent: "*", allow: "/", disallow: "/api/" },
+    // /wp-json/ ist der Klickspeicher der BN-Kampagne (n8n), kein Inhalt
+    rules: { userAgent: "*", allow: "/", disallow: ["/api/", "/wp-json/"] },
     sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

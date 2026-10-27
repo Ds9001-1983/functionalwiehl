@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Menu } from "lucide-react";
 import {
   Sheet,
@@ -11,16 +12,30 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { NAV_ITEMS } from "@/lib/nav";
-import { WhatsAppCta, CalendlyCta } from "./cta-buttons";
+import { WhatsAppCta } from "./cta-buttons";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+  // Ziel des angetippten Menüpunkts: navigiert wird erst, wenn das Sheet ganz zu ist
+  const ziel = useRef<string | null>(null);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet
+      open={open}
+      onOpenChange={setOpen}
+      onOpenChangeComplete={(offen) => {
+        const href = ziel.current;
+        if (offen || !href) return;
+        ziel.current = null;
+        // Nach der Schließ-Animation gibt base-ui die Scroll-Sperre frei; erst dann
+        // scrollt Next zum Anker (auch seitenübergreifend, z. B. von /impressum/ nach /#preise).
+        requestAnimationFrame(() => router.push(href));
+      }}
+    >
       <SheetTrigger
         aria-label="Menü öffnen"
-        className="inline-flex size-11 items-center justify-center rounded-full text-brand hover:bg-brand/5 xl:hidden"
+        className="inline-flex size-11 items-center justify-center rounded-full text-brand hover:bg-brand/5 lg:hidden"
       >
         <Menu className="size-6" />
       </SheetTrigger>
@@ -33,16 +48,23 @@ export function MobileNav() {
             <Link
               key={item.href}
               href={item.href}
-              onClick={() => setOpen(false)}
-              className="rounded-xl px-3 py-3 text-base font-semibold text-brand hover:bg-brand/5"
+              onClick={(e) => {
+                // Sheet erst schließen, dann scrollen: Solange es offen ist, sperrt base-ui das
+                // Scrollen der Seite. stopImmediatePropagation hält zusätzlich den Anker-Handler
+                // von SmoothScroll (am document, nach React registriert) zurück.
+                e.preventDefault();
+                e.nativeEvent.stopImmediatePropagation();
+                ziel.current = item.href;
+                setOpen(false);
+              }}
+              className="rounded-xl px-3 py-3 text-base font-semibold tracking-wide text-brand uppercase hover:bg-brand/5"
             >
               {item.label}
             </Link>
           ))}
         </nav>
         <div className="mt-auto flex flex-col gap-2 p-4">
-          <WhatsAppCta position="header" />
-          <CalendlyCta position="header" variant="ghost" />
+          <WhatsAppCta ziel="probetraining" position="header" />
         </div>
       </SheetContent>
     </Sheet>

@@ -1,5 +1,4 @@
-import { KONTAKT } from "@/lib/cta";
-import { CTA } from "@/lib/cta";
+import { CTA, KONTAKT } from "@/lib/cta";
 import { SITE_URL } from "@/lib/seo";
 
 /**
@@ -15,16 +14,21 @@ export function JsonLd({ data }: { data: Record<string, unknown> }) {
   );
 }
 
-/** Site-weites HealthClub/ExerciseGym-Schema (Root-Layout). */
+/**
+ * Site-weites HealthClub/ExerciseGym-Schema (app/(site)/layout.tsx). Stand wie live
+ * (27.10.2026): Monatspreise 37,00–59,00 €, Betreuungszeiten wie BETREUUNGSZEITEN in
+ * lib/cta.ts, Mail gym@. Kein alternateName mit dem alten Studionamen (live nicht vorhanden).
+ */
 export const ORGANIZATION_JSONLD = {
   "@context": "https://schema.org",
   "@type": ["HealthClub", "ExerciseGym"],
   "@id": `${SITE_URL}/#studio`,
-  name: KONTAKT.firma,
-  alternateName: "INJOY Wiehl",
+  name: "Functional Wiehl",
+  legalName: KONTAKT.firma,
   url: `${SITE_URL}/`,
   logo: `${SITE_URL}/img/logo-functional-neu.png`,
-  image: [`${SITE_URL}/img/img_4942.jpg`],
+  // die 4 Slider-Bilder der Live-Startseite
+  image: ["img_4942.jpg", "img_4880.jpg", "img_4865-2.jpg", "img_4949.jpg"].map((b) => `${SITE_URL}/img/${b}`),
   telephone: "+492262752717",
   email: KONTAKT.mail,
   address: {
@@ -54,8 +58,8 @@ export const ORGANIZATION_JSONLD = {
     },
   ],
   description:
-    "Fitnessstudio in Wiehl mit 24/7-Zugang – ehemals INJOY Wiehl. Betreuungszeiten: Mo–Do 8–22, Fr 8–21, Sa/So 10–18 Uhr.",
-  priceRange: "ab 8,00 € pro Woche",
+    "Fitnessstudio in Wiehl mit 24/7-Zugang. Betreuung Mo–Fr 08:00–21:00 Uhr, So 10:00–14:00 Uhr, Samstag ohne Betreuung.",
+  priceRange: "37,00–59,00 € pro Monat",
   amenityFeature: [
     { "@type": "LocationFeatureSpecification", name: "24/7-Zugang", value: true },
     { "@type": "LocationFeatureSpecification", name: "Kostenlose Parkplätze", value: true },
@@ -63,18 +67,6 @@ export const ORGANIZATION_JSONLD = {
   ],
   sameAs: [CTA.instagram, CTA.facebook],
 } as const;
-
-export function faqJsonLd(items: { q: string; a: string }[]) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: items.map((f) => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a },
-    })),
-  };
-}
 
 export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
   return {

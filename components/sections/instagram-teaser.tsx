@@ -1,56 +1,85 @@
-import Image, { type StaticImageData } from "next/image";
+import Image from "next/image";
+import { Play } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { CTA } from "@/lib/cta";
+import type { InstagramPost } from "@/lib/instagram/typen";
+
+const datumFormat = new Intl.DateTimeFormat("de-DE", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  timeZone: "Europe/Berlin",
+});
 
 /**
- * Statischer Instagram-Teaser: kuratierte, lokal gehostete Bilder + Profil-Link.
- * Bewusst KEIN Embed/Feed-Plugin — null Third-Party-JS vor Consent,
- * kein API-Token nötig (Plan §2).
+ * #aktuelles: die neuesten Instagram-Beiträge als Kacheln, rein darstellend.
+ * Bilder liegen lokal (Fallback) bzw. später im eigenen Blob – kein Embed, kein Request an
+ * Meta beim Laden, also keine Einwilligung nötig. Jede Kachel verlinkt den Beitrag selbst,
+ * Reels zeigen das Play-Symbol (wie der Datenschutzmodus von Smash Balloon live).
  */
 export function InstagramTeaser({
-  images,
+  id,
+  posts,
   index,
 }: {
-  images: { src: StaticImageData; alt: string }[];
+  id?: string;
+  posts: InstagramPost[];
   index?: string;
 }) {
   return (
-    <section className="container-site py-16 sm:py-20">
+    <section id={id} className="container-site scroll-mt-24 py-16 sm:py-20">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <SectionHeading index={index} eyebrow="@functionalwiehl" title="Aktuelles aus dem Studio" />
+        <SectionHeading index={index} eyebrow="@functionalwiehl" title="Aktuelles" />
         <a
           href={CTA.instagram}
           target="_blank"
-          rel="noopener"
-          className="group inline-flex items-center gap-2 text-sm font-bold text-brand"
+          rel="noopener noreferrer"
+          className="group inline-flex min-h-11 items-center gap-2 text-sm font-bold text-brand"
         >
           <InstagramIcon className="size-4" />
-          <span className="underline-offset-4 group-hover:underline">Auf Instagram folgen</span>
+          <span className="underline-offset-4 group-hover:underline">@functionalwiehl auf Instagram</span>
         </a>
       </div>
-      <Reveal stagger className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {images.map((img) => (
+      <Reveal
+        stagger
+        className="-mx-4 mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0"
+      >
+        {posts.map((post) => (
           <a
-            key={img.alt}
-            href={CTA.instagram}
+            key={post.id}
+            href={post.permalink}
             target="_blank"
-            rel="noopener"
-            className="group relative overflow-hidden rounded-card"
+            rel="noopener noreferrer"
+            className="group relative block aspect-[4/5] w-[72%] shrink-0 snap-center overflow-hidden rounded-card bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:w-auto"
           >
             <Image
-              src={img.src}
-              alt={img.alt}
-              sizes="(max-width: 640px) 50vw, 25vw"
-              className="aspect-square w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
-              placeholder="blur"
+              src={post.bild}
+              alt={post.alt}
+              fill
+              sizes="(max-width: 640px) 72vw, 33vw"
+              className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              placeholder={typeof post.bild === "string" ? "empty" : "blur"}
             />
-            <span
-              aria-hidden="true"
-              className="absolute inset-0 flex items-center justify-center bg-brand/0 text-cream opacity-0 transition-all duration-300 group-hover:bg-brand/40 group-hover:opacity-100"
-            >
-              <InstagramIcon className="size-7" />
+            <span className="sr-only">
+              {post.typ === "VIDEO" ? "Reel" : "Beitrag"} auf Instagram ansehen (neues Fenster)
             </span>
+            {post.typ === "VIDEO" && (
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 flex items-center justify-center bg-brand-deep/0 transition-colors duration-300 group-hover:bg-brand-deep/25"
+              >
+                <span className="flex size-14 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm">
+                  <Play className="size-6 translate-x-0.5 fill-current" />
+                </span>
+              </span>
+            )}
+            <time
+              dateTime={post.zeitpunkt}
+              className="absolute bottom-3 left-3 rounded-pill bg-white/90 px-2.5 py-1 text-xs font-bold text-brand"
+            >
+              {datumFormat.format(new Date(post.zeitpunkt))}
+            </time>
           </a>
         ))}
       </Reveal>
