@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { CheckupQuiz } from "@/components/checkup-quiz";
 import { CalendlyCta, WhatsAppCta } from "@/components/cta-buttons";
 import { faqJsonLd, JsonLd } from "@/components/json-ld";
-import { Reveal } from "@/components/motion/reveal";
 import { CtaBand } from "@/components/sections/cta-band";
 import { EditorialSplit } from "@/components/sections/editorial-split";
 import { FaqAccordion } from "@/components/sections/faq-accordion";
@@ -107,28 +106,14 @@ export default function HomePage() {
 
       <PriceSection index="02" />
 
-      {/* Check-up-Teaser — Conversion-Band auf Indigo */}
-      <section className="grain bg-brand-gradient">
-        <Reveal className="container-site flex flex-col items-start gap-5 py-16 sm:flex-row sm:items-center sm:justify-between sm:py-20">
-          <div className="max-w-2xl">
-            <span className="eyebrow text-cta">
-              <span aria-hidden="true" className="h-px w-8 bg-cta/70" />
-              Persönliche Empfehlung
-            </span>
-            <h2 className="mt-3 text-headline text-cream">Dein Fitness- & Gesundheits-Check-up</h2>
-            <p className="mt-3 text-cream/85">
-              Beantworte ein paar Fragen zu deinen Zielen, deinem Alltag und deiner Gesundheit –
-              wir melden uns mit deiner persönlichen Empfehlung.
-            </p>
+      {/* Check-up direkt auf der Seite wie live (/gesundheits-check/ leitet hierher) */}
+      <section id="checkup" className="scroll-mt-24 bg-sand">
+        <div className="container-site max-w-3xl py-16 sm:py-20">
+          <SectionHeading eyebrow="Check up" title="Fitness- & Gesundheits-Check-up" />
+          <div className="mt-8">
+            <CheckupQuiz />
           </div>
-          <Link
-            href="/gesundheits-check/"
-            className="group inline-flex min-h-12 shrink-0 items-center gap-2 rounded-pill bg-cta px-6 font-bold text-cta-foreground transition-[filter] hover:brightness-95"
-          >
-            Check-up starten
-            <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
-          </Link>
-        </Reveal>
+        </div>
       </section>
 
       <GalleryGrid
