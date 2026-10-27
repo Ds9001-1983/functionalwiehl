@@ -72,11 +72,8 @@ export function CheckupQuiz() {
         body: JSON.stringify({ antworten, kontakt, einwilligungGesundheit, einwilligungDatenschutz }),
       });
       if (!res.ok) throw new Error(String(res.status));
-      // NIE Antwortdaten ins Tracking — nur die Ziel-Kategorie
-      trackEvent("checkup_submit", {
-        position: "quiz",
-        ergebnis_kategorie: String(antworten["ziel"] ?? "unbekannt"),
-      });
+      // NIE Antwort- oder Ergebnisdaten ins Tracking (Nähe zu Art. 9 DSGVO)
+      trackEvent("checkup_submit", { position: "quiz" });
       setStatus("fertig");
     } catch {
       setStatus("fehler");

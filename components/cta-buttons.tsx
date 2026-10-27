@@ -127,7 +127,7 @@ export function PlanWaehlenCta({
     <TrackedLink
       href={CTA.whatsappVertrag}
       event="whatsapp_click"
-      params={{ position: "pricecard", preset: "vertrag" }}
+      params={{ position: "pricecard", preset: "mitglied" }}
       className={cn(
         pillBase,
         "min-h-12 w-full bg-brand px-6 text-[15px] text-cream hover:bg-brand/90",

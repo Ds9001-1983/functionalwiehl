@@ -28,14 +28,19 @@ export type EventPosition =
   | "footer"
   | "kontaktzeile"
   | "teaser"
-  | "quiz";
+  | "quiz"
+  | "preise_extras"
+  | "kontakt"
+  | "not_found";
+
+/** WhatsApp-Ziel = Konstante in lib/cta.ts (probetraining, mitglied, allgemein) */
+export type WhatsAppPreset = "probetraining" | "mitglied" | "allgemein";
 
 export type EventParams = {
   position?: EventPosition;
-  /** WhatsApp-Preset: probetraining → Meta "Lead", vertrag → "Contact" */
-  preset?: "probetraining" | "vertrag";
-  /** Nur für checkup_submit — NIE Antwortdaten, nur die Ergebnis-Kategorie */
-  ergebnis_kategorie?: string;
+  /** WhatsApp-Preset. Meta-Zuordnung bis P2a: mitglied → "Contact", sonst "Lead" */
+  preset?: WhatsAppPreset;
+  // checkup_submit trägt bewusst KEINE Antwort- oder Ergebnisdaten (Nähe zu Art. 9 DSGVO).
 };
 
 declare global {
@@ -48,7 +53,7 @@ declare global {
 function metaEventFor(name: EventName, params: EventParams): string | null {
   switch (name) {
     case "whatsapp_click":
-      return params.preset === "vertrag" ? "Contact" : "Lead";
+      return params.preset === "mitglied" ? "Contact" : "Lead";
     case "tel_click":
     case "mail_click":
       return "Contact";
