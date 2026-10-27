@@ -286,6 +286,8 @@ test.describe("Rahmen", () => {
     ]);
     await expect(cta).toBeVisible();
     await expect(cta).toHaveAttribute("href", CTA.whatsappProbetraining);
+    // Bedientexte deutsch, auch der Screenreader-Text des Schließen-Buttons
+    if (isMobile) await expect(page.getByRole("dialog").getByRole("button", { name: "Menü schließen" })).toBeVisible();
   });
 
   test("Menü-Klick (Desktop) scrollt zur Section und setzt den Anker", async ({ page, isMobile }) => {

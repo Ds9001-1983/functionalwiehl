@@ -39,7 +39,7 @@ export function MobileNav() {
       >
         <Menu className="size-6" />
       </SheetTrigger>
-      <SheetContent side="right" className="w-80">
+      <SheetContent side="right" className="w-80" closeLabel="Menü schließen">
         <SheetHeader>
           <SheetTitle className="text-left text-brand">Menü</SheetTitle>
         </SheetHeader>
