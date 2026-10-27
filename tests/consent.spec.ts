@@ -120,6 +120,27 @@ test("Widerruf: Häkchen zeigen die Entscheidung, Entzug lädt neu und der Pixel
   expect(JSON.parse(decodeURIComponent(gespeichert!.value))).toMatchObject({ statistik: true, marketing: false });
 });
 
+test("BN-LP lädt den Pixel ohne Einwilligung (Entscheidung Dennis), die Startseite nicht", async ({ page }) => {
+  const trackerRequests = trackerZaehlen(page);
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  expect(trackerRequests).toHaveLength(0);
+
+  await page.goto("/black-november/");
+  await warteAufPixel(page, 3);
+  expect(trackerRequests.filter((u) => /connect\.facebook\.net/.test(u))).toHaveLength(1);
+  expect(trackerRequests.filter((u) => /google/.test(u))).toHaveLength(0);
+});
+
+test("Banner-Hinweis auf den Pixel ohne Einwilligung nur auf der BN-LP", async ({ page }) => {
+  const hinweis = "Auf dieser Aktionsseite messen wir den Erfolg unserer Anzeige mit dem Meta-Pixel auch ohne deine Einwilligung.";
+  await page.goto("/black-november/");
+  await expect(banner(page).getByText(hinweis)).toBeVisible();
+  await page.goto("/");
+  await expect(banner(page)).toBeVisible();
+  await expect(banner(page).getByText(hinweis)).toHaveCount(0);
+});
+
 test.describe("readConsentCookie (ohne Browser)", () => {
   test.skip(({ isMobile }) => isMobile, "Unit-Test, einmal genügt");
   const g = globalThis as unknown as { document?: { cookie: string } };
