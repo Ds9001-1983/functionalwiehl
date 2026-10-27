@@ -47,11 +47,11 @@ type GewichtKey = GewichtFeld["key"];
  * Fitness- & Gesundheits-Check-up (27 Schritte wie live, Inhalte aus content/checkup-fragen.ts).
  * Ein Schritt pro Ansicht, „Zurück“ über den Verlauf, Versand an POST /api/checkup/.
  *
- * Einbau auf der Startseite (P1a), die Section trägt H2 und Anker:
- *   <section id="checkup" aria-labelledby="checkup-titel" className="scroll-mt-24 …">
- *     <h2 id="checkup-titel">{CHECKUP_TEXTE.titel}</h2>
+ * Einbau auf der Startseite (app/(site)/page.tsx), die Section trägt H2 und Anker:
+ *   <section id="checkup" …>
+ *     <SectionHeading title={CHECKUP_TEXTE.titel} … />
  *     <CheckupQuiz />
- *     <p className="…">{CHECKUP_TEXTE.hinweis}</p>
+ *     <p>{CHECKUP_TEXTE.hinweis} <Link href="/datenschutz/">{CHECKUP_TEXTE.hinweisLink}</Link>.</p>
  *   </section>
  * Feste IDs (#checkup-name, #checkup-email, #checkup-telefon) → nur einmal pro Seite einbinden.
  */

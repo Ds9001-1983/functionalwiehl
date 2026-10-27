@@ -356,11 +356,13 @@ export const CHECKUP_TEXTE = {
   fehlerZuVieleAnfragen: "Zu viele Anfragen – bitte versuche es in ein paar Minuten noch einmal.",
   fehlerWhatsApp: "Oder schreib uns direkt per WhatsApp.",
   /**
-   * Hinweis unter dem Quiz (Section #checkup, P1a). „nicht an Dritte“ prüft Recht:
+   * Hinweis unter dem Quiz (Section #checkup der Startseite), dahinter der Link
+   * `hinweisLink` auf /datenschutz/ und ein Punkt. „nicht an Dritte“ prüft Recht:
    * Die Mail läuft über Alfahosting (Auftragsverarbeiter) an gym@.
    */
   hinweis:
-    "Deine Angaben werden ausschließlich zur Erstellung deiner Trainingsempfehlung und zur Kontaktaufnahme verwendet und nicht an Dritte weitergegeben. Gesundheitsangaben verarbeiten wir nur mit deiner ausdrücklichen Einwilligung (Art. 9 Abs. 2 lit. a DSGVO) – Details in der Datenschutzerklärung.",
+    "Deine Angaben werden ausschließlich zur Erstellung deiner Trainingsempfehlung und zur Kontaktaufnahme verwendet und nicht an Dritte weitergegeben. Gesundheitsangaben verarbeiten wir nur mit deiner ausdrücklichen Einwilligung (Art. 9 Abs. 2 lit. a DSGVO) – Details in der",
+  hinweisLink: "Datenschutzerklärung",
 } as const;
 
 /** Stand der Einwilligungstexte – steht in jeder Check-up-Mail (Nachweis nach Art. 7 Abs. 1 DSGVO) */

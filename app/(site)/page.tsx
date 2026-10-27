@@ -10,6 +10,7 @@ import { InstagramTeaser } from "@/components/sections/instagram-teaser";
 import { KontaktSection } from "@/components/sections/kontakt-section";
 import { PriceSection } from "@/components/sections/price-section";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { CHECKUP_TEXTE } from "@/content/checkup-fragen";
 import { INSTAGRAM_FALLBACK } from "@/content/instagram-fallback";
 import { LEISTUNGEN_TITEL, LEISTUNGEN_UNTERTITEL } from "@/content/leistungen";
 import { PAGES, pageMetadata } from "@/lib/seo";
@@ -111,7 +112,7 @@ export default function HomePage() {
           <SectionHeading
             index="04"
             eyebrow="Check up"
-            title="Fitness- & Gesundheits-Check-up"
+            title={CHECKUP_TEXTE.titel}
             tone="light"
             className="[&_h2]:text-headline"
           />
@@ -119,12 +120,9 @@ export default function HomePage() {
             <CheckupQuiz />
           </div>
           <p className="mt-6 text-xs text-cream/80">
-            Deine Angaben werden ausschließlich zur Erstellung deiner Trainingsempfehlung und zur
-            Kontaktaufnahme verwendet und nicht an Dritte weitergegeben. Gesundheitsangaben
-            verarbeiten wir nur mit deiner ausdrücklichen Einwilligung (Art. 9 Abs. 2 lit. a
-            DSGVO) – Details in der{" "}
+            {CHECKUP_TEXTE.hinweis}{" "}
             <Link href="/datenschutz/" className="font-semibold text-cream underline underline-offset-2">
-              Datenschutzerklärung
+              {CHECKUP_TEXTE.hinweisLink}
             </Link>
             .
           </p>
