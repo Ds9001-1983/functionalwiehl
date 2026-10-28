@@ -25,6 +25,7 @@ import {
   type GewichtFeld,
   type Option,
   type SchrittId,
+  type Ziel,
 } from "@/content/checkup-fragen";
 import { CTA } from "@/lib/cta";
 import { trackEvent } from "@/lib/tracking";
@@ -43,9 +44,14 @@ export type CheckupQuizProps = {
 type Phase = "start" | "fragen" | "kontakt" | "fertig";
 type GewichtKey = GewichtFeld["key"];
 
+/** Pause nach dem Klick auf eine Einfachauswahl: Die Auswahl leuchtet kurz auf, dann kommt die nächste Frage. */
+const AUTO_WEITER_MS = 180;
+
 /**
  * Fitness- & Gesundheits-Check-up (27 Schritte wie live, Inhalte aus content/checkup-fragen.ts).
- * Ein Schritt pro Ansicht, „Zurück“ über den Verlauf, Versand an POST /api/checkup/.
+ * Ein Schritt pro Ansicht wie ein Klick-Funnel: Eine Einfachauswahl springt beim Klick weiter,
+ * Mehrfachauswahl und Gewicht brauchen „Weiter“. „Zurück“ und „Weiter“ bleiben unten für das
+ * Vor und Zurück über den Verlauf. Versand an POST /api/checkup/.
  *
  * Einbau auf der Startseite (app/(site)/page.tsx), die Section trägt H2 und Anker:
  *   <section id="checkup" …>
@@ -71,6 +77,8 @@ export function CheckupQuiz({ ueberschrift: H = "h3", className }: CheckupQuizPr
   const [honeypot, setHoneypot] = useState("");
   const [sendet, setSendet] = useState(false);
   const [fehler, setFehler] = useState<string | null>(null);
+  /** Ziel nach einem Klick auf eine Einfachauswahl, angesprungen nach AUTO_WEITER_MS */
+  const [sprung, setSprung] = useState<Ziel | null>(null);
 
   const startZeit = useRef(0);
   const karteRef = useRef<HTMLDivElement>(null);
@@ -79,6 +87,18 @@ export function CheckupQuiz({ ueberschrift: H = "h3", className }: CheckupQuizPr
   const id = useId();
 
   const schritt = SCHRITT[verlauf[verlauf.length - 1]];
+
+  // Klick-Funnel: kurze Pause, dann weiter. „Zurück“, „Weiter“ oder Verlassen der Seite brechen ab.
+  useEffect(() => {
+    if (sprung === null) return;
+    const timer = window.setTimeout(() => {
+      setSprung(null);
+      fokusNachWechsel.current = true;
+      if (sprung === "kontakt") setPhase("kontakt");
+      else setVerlauf((v) => [...v, sprung]);
+    }, AUTO_WEITER_MS);
+    return () => window.clearTimeout(timer);
+  }, [sprung]);
 
   // Nach jedem Schrittwechsel: Fokus auf die neue Überschrift, Karte bei Bedarf ins Bild holen.
   // Bewusst ohne Smooth-Scroll: Ein schneller Tipp während der Animation träfe sonst die falsche Stelle.
@@ -106,6 +126,7 @@ export function CheckupQuiz({ ueberschrift: H = "h3", className }: CheckupQuizPr
 
   function weiter(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setSprung(null); // „Weiter“ während der Pause nach einem Klick: nur einmal springen
     let neu: Record<string, CheckupAntwort> = antworten;
     if (schritt.typ === "multi" && !Array.isArray(antworten[schritt.key])) {
       neu = { ...antworten, [schritt.key]: [KEINE_ANGABE] }; // ohne Auswahl wie live
@@ -125,6 +146,7 @@ export function CheckupQuiz({ ueberschrift: H = "h3", className }: CheckupQuizPr
   }
 
   function zurueck() {
+    setSprung(null);
     setFehler(null);
     setGewichtFehler(null);
     if (phase === "kontakt") return wechsle(() => setPhase("fragen"));
@@ -134,7 +156,13 @@ export function CheckupQuiz({ ueberschrift: H = "h3", className }: CheckupQuizPr
 
   function waehle(option: Option) {
     if (schritt.typ === "gewicht") return;
-    if (schritt.typ === "single") return setAntworten({ ...antworten, [schritt.key]: option.wert });
+    if (schritt.typ === "single") {
+      if (sprung !== null) return; // Doppelklick während der Pause
+      const neu = { ...antworten, [schritt.key]: option.wert };
+      setAntworten(neu);
+      setSprung(naechsterSchritt(schritt, neu));
+      return;
+    }
 
     const bisher = antworten[schritt.key];
     const auswahl = (Array.isArray(bisher) ? (bisher as string[]) : []).filter((w) => w !== KEINE_ANGABE);

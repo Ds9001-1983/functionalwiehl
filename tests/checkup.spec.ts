@@ -2,6 +2,7 @@ import { createServer } from "node:net";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import {
+  CHECKUP_SCHRITTE,
   CHECKUP_TEXTE as T,
   EINWILLIGUNG,
   EINWILLIGUNG_STAND,
@@ -42,12 +43,17 @@ async function quizOeffnen(page: Page, consent: "notwendig" | "statistik" = "not
   await page.getByRole("button", { name: T.startButton }).click();
 }
 
-/** Prüft Zähler und Fokus des Schritts, wählt die Optionen und klickt „Weiter →“. */
+/**
+ * Prüft Zähler und Fokus des Schritts und wählt die Optionen. Eine Einfachauswahl springt beim
+ * Klick weiter (Klick-Funnel), bei Mehrfachauswahl klickt der Helfer „Weiter →“.
+ */
 async function antworte(page: Page, nummer: number, titel: string, auswahl: string | string[] = []) {
+  const schritt = CHECKUP_SCHRITTE.find((s) => s.nummer === nummer && s.titel === titel);
+  if (!schritt) throw new Error(`Schritt ${nummer} „${titel}“ gibt es nicht`);
   await expect(page.getByRole("heading", { name: titel, exact: true })).toBeFocused();
   await expect(page.getByText(`Frage ${nummer} von 27`, { exact: true })).toBeVisible();
   for (const wert of [auswahl].flat()) await page.getByRole("button", { name: wert, exact: true }).click();
-  await page.getByRole("button", { name: T.weiter }).click();
+  if (schritt.typ !== "single") await page.getByRole("button", { name: T.weiter }).click();
 }
 
 /** Kürzester Pfad (Gesundheit → Stressabbau, überall „Nein“) bis zum Kontakt-Schritt */
@@ -167,6 +173,16 @@ test.describe("Quiz im Browser", () => {
     const mail = await erwarteTestMail(request, { an: TEST_ENV.FORM_TO, betreff: name });
     expect(mail.betreff).toBe(`Neuer Check-up über die Website – ${name}`);
     expect(mail.antwortAn).toBe("muskel@example.com");
+    // HTML-Fassung: Kontakt mit Links, „Auf einen Blick“ und die Gesundheitshinweise
+    expect(mail.html).toContain("<!doctype html>");
+    expect(mail.html).toContain('href="tel:015112345678"');
+    expect(mail.html).toContain('href="mailto:muskel@example.com"');
+    expect(mail.html).toContain("82,5 kg → 75 kg (−7,5 kg)");
+    expect(mail.html).toContain("Muskeln &amp; Körperstruktur – Muskelaufbau");
+    for (const hinweis of ["Herz-Kreislauf: Bluthochdruck, KHK", "• Orthopädisch<", "Medikamente: Schmerzmittel"]) {
+      expect(mail.html, hinweis).toContain(hinweis);
+    }
+    expect(mail.html).not.toContain("Sonstige Erkrankungen:");
     for (const zeile of [
       `Name: ${name}`,
       "E-Mail: muskel@example.com",
@@ -243,6 +259,7 @@ test.describe("Quiz im Browser", () => {
     }
 
     // vom Kontakt-Schritt zurück und wieder vor
+    await expect(page.getByRole("heading", { name: T.kontaktTitel })).toBeFocused();
     await page.getByRole("button", { name: T.zurueck }).click();
     await expect(page.getByRole("heading", { name: "Hattest du eine OP in den letzten 12 Monaten?" })).toBeFocused();
     await expect(page.getByRole("button", { name: "Nein", exact: true })).toHaveAttribute("aria-pressed", "true");
@@ -270,6 +287,41 @@ test.describe("Quiz im Browser", () => {
     expect(mail.text).toContain("Bisherige Versuche: Sport, Ernährung");
     expect(mail.text).not.toContain("Problemzonen");
     expect(mail.text).not.toContain("Herzinfarkt");
+  });
+
+  test("Klick-Funnel: Einfachauswahl springt weiter, Mehrfachauswahl wartet auf „Weiter“", async ({ page }) => {
+    await quizOeffnen(page);
+    await expect(page.getByRole("heading", { name: "Dein Beruf" })).toBeFocused();
+    await expect(page.getByRole("button", { name: T.weiter })).toBeDisabled();
+
+    // Doppelklick zählt nur einmal: genau ein Schritt weiter
+    await page.getByRole("button", { name: "sitzend", exact: true }).dblclick();
+    await expect(page.getByRole("heading", { name: "Dein Stresslevel" })).toBeFocused();
+    await expect(page.getByText("Frage 3 von 27", { exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: "niedrig", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Dein Fitnesslevel" })).toBeFocused();
+    await page.getByRole("button", { name: "mittel", exact: true }).click();
+    await page.getByRole("button", { name: "Gesundheit und Lifestyle", exact: true }).click();
+    await page.getByRole("button", { name: "Stressabbau", exact: true }).click();
+
+    // Mehrfachauswahl: Klick wählt nur aus, die Frage bleibt stehen
+    await expect(page.getByRole("heading", { name: "Bisherige Versuche deine Ziele zu erreichen" })).toBeFocused();
+    await page.getByRole("button", { name: "Sport", exact: true }).click();
+    await page.getByRole("button", { name: "Ernährung", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Sport", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByRole("heading", { name: "Bisherige Versuche deine Ziele zu erreichen" })).toBeVisible();
+    await page.getByRole("button", { name: T.weiter }).click();
+    await expect(page.getByRole("heading", { name: "Hast du bereits im Fitnessstudio trainiert?" })).toBeFocused();
+
+    // Zurück über zwei Schritte, dann per „Weiter“ mit der alten Auswahl wieder vor
+    await page.getByRole("button", { name: T.zurueck }).click();
+    await page.getByRole("button", { name: T.zurueck }).click();
+    await expect(page.getByRole("heading", { name: "SUPER DA KÖNNEN WIR DIR BEI HELFEN" })).toBeFocused();
+    await expect(page.getByRole("button", { name: "Stressabbau", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await page.getByRole("button", { name: T.weiter }).click();
+    await expect(page.getByRole("heading", { name: "Bisherige Versuche deine Ziele zu erreichen" })).toBeFocused();
+    await expect(page.getByRole("button", { name: "Ernährung", exact: true })).toHaveAttribute("aria-pressed", "true");
   });
 
   test("Gewicht: leere Felder und Werte außerhalb 35–250 kg werden angemahnt", async ({ page }) => {
@@ -362,13 +414,19 @@ test.describe("Quiz im Browser", () => {
   test("keine kritischen oder schweren A11y-Fehler in Frage- und Kontakt-Schritt", async ({ page }) => {
     await quizOeffnen(page);
     const pruefe = async () => {
-      // Farbübergänge (transition-colors) erst abwarten, sonst misst axe Zwischenfarben
-      await quiz(page).evaluate((karte) => Promise.all(karte.getAnimations({ subtree: true }).map((a) => a.finished)));
+      // Farbübergänge (transition-colors) erst abwarten, sonst misst axe Zwischenfarben.
+      // allSettled: Ein beim Schrittwechsel abgebrochener Übergang lehnt `finished` ab.
+      await quiz(page).evaluate((karte) => Promise.allSettled(karte.getAnimations({ subtree: true }).map((a) => a.finished)));
       const axe = await new AxeBuilder({ page }).include('[data-slot="checkup-quiz"]').analyze();
       const schwer = axe.violations.filter((v) => v.impact === "critical" || v.impact === "serious");
       expect(schwer, schwer.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(", ")}`).join("\n")).toHaveLength(0);
     };
+    await pruefe();
+    // Auswahl springt weiter; zurück zeigt sie gedrückt, „Weiter“ führt wieder vor
     await page.getByRole("button", { name: "gemischt", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Dein Stresslevel" })).toBeFocused();
+    await page.getByRole("button", { name: T.zurueck }).click();
+    await expect(page.getByRole("button", { name: "gemischt", exact: true })).toHaveAttribute("aria-pressed", "true");
     await pruefe();
     await page.getByRole("button", { name: T.weiter }).click();
     await bisZumKontaktAb3(page);
@@ -510,6 +568,19 @@ test.describe("POST /api/checkup/ (HTTP)", () => {
     expect(mail.text).toContain("Fokusbereich: Stressabbau");
     expect(mail.text).toContain("Gesundheitsdaten (Art. 9 DSGVO)");
     expect(mail.text).not.toMatch(/undefined|\[object/);
+    expect(mail.html).not.toMatch(/undefined|\[object|NaN/);
+    expect(mail.html).toContain('href="tel:02262752717"');
+  });
+
+  test("HTML-Mail maskiert Eingaben aus dem Formular", async ({ request }) => {
+    const name = eindeutig('Test <b onclick="x">&');
+    const res = await request.post(API, { data: payload(name) });
+    expect(res.status()).toBe(200);
+    const mail = await erwarteTestMail(request, { an: TEST_ENV.FORM_TO, betreff: name });
+    expect(mail.html).not.toContain("<b onclick");
+    expect(mail.html).toContain("Test &lt;b onclick=&quot;x&quot;&gt;&amp;");
+    // Vorschauzeile ohne Gesundheitsdaten
+    expect(mail.html).toMatch(/<div style="display:none[^>]*>Check-up von Test &lt;b[^<]*Uhr<\/div>/);
   });
 
   test("Honeypot gefüllt oder unmöglich schnell → 200 ohne Versand", async ({ request }) => {

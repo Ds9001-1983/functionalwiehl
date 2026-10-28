@@ -66,15 +66,19 @@ test("Check-up-Quiz auf der Startseite: Durchlauf bis zur Erfolgsmeldung (Versan
   const quiz = page.locator("#checkup");
   await quiz.getByRole("button", { name: /Los geht/ }).click();
 
-  // Jede Frage beantworten (erste freie Option bzw. Zahlen), bis der Kontakt-Schritt kommt
+  // Jede Frage beantworten (erste freie Option bzw. Zahlen), bis der Kontakt-Schritt kommt.
+  // Klick-Funnel: Eine Einfachauswahl springt selbst weiter, sonst „Weiter“.
+  const karte = quiz.locator('[data-slot="checkup-quiz"]');
   const email = quiz.locator('input[type="email"]');
   for (let runde = 0; runde < 40 && !(await email.isVisible()); runde++) {
-    for (const zahl of await quiz.locator('input[type="number"]').all()) await zahl.fill("80");
-    const option = quiz.locator('button[aria-pressed="false"]').first();
-    if ((await quiz.locator('input[type="number"]').count()) === 0 && (await option.count()) > 0) {
-      await option.click();
-    }
-    await quiz.getByRole("button", { name: /Weiter/ }).click();
+    const titel = (await karte.getByRole("heading").textContent()) ?? "";
+    const zahlen = await karte.locator('input[type="number"]').all();
+    for (const zahl of zahlen) await zahl.fill("80");
+    const option = karte.locator('button[aria-pressed="false"]').first();
+    if (zahlen.length === 0 && (await option.count()) > 0) await option.click();
+    const mehrfach = (await karte.getByText(/Mehrfachauswahl/).count()) > 0;
+    if (zahlen.length > 0 || mehrfach) await karte.getByRole("button", { name: /Weiter/ }).click();
+    await expect(karte.getByRole("heading")).not.toHaveText(titel);
   }
 
   await quiz.getByLabel(/Name/).fill("Test Person");

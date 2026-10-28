@@ -118,8 +118,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { betreff, text } = koerpermasseMail(pruefung.daten, new Date());
-    await sendeMail({ an: empfaenger("FORM_TO"), betreff, text });
+    const { betreff, text, html } = koerpermasseMail(pruefung.daten, new Date());
+    await sendeMail({ an: empfaenger("FORM_TO"), betreff, text, html });
   } catch (err) {
     log(mailFehlerCode(err));
     if (err instanceof MailNichtKonfiguriertError) {

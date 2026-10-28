@@ -6,7 +6,8 @@ import type { Mail as Transporter } from "nodemailer";
  *
  * - Env erst beim Aufruf: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM;
  *   Empfänger über empfaenger("FORM_TO" | "ALERT_TO").
- * - Nur Text-Mails, nodemailer ohne Datei- und URL-Zugriff, TLS ≥ 1.2,
+ * - Text-Mails, auf Wunsch zusätzlich als HTML (lib/mail-html.ts, ohne Bilder und externe
+ *   Inhalte), nodemailer ohne Datei- und URL-Zugriff, TLS ≥ 1.2,
  *   Port 465 = implizites TLS, sonst STARTTLS Pflicht. Die TLS-Prüfung nie abschalten.
  * - Fehlt etwas → MailNichtKonfiguriertError. KEIN „nur loggen“-Fallback: Die Formulare
  *   enthalten Gesundheitsdaten (Art. 9 DSGVO) – nie Inhalte loggen, nur mailFehlerCode().
@@ -21,6 +22,8 @@ export type MailAuftrag = {
   an: string;
   betreff: string;
   text: string;
+  /** HTML-Fassung derselben Angaben; der Text geht immer mit (multipart/alternative) */
+  html?: string;
   /** Reply-To, z. B. die E-Mail der Person aus dem Formular */
   antwortAn?: string;
 };
@@ -33,6 +36,7 @@ export type TestMail = {
   antwortAn: string | null;
   betreff: string;
   text: string;
+  html: string | null;
 };
 
 export class MailNichtKonfiguriertError extends Error {
@@ -106,8 +110,8 @@ let smtpTransport: Transporter | undefined;
 let jsonTransport: ReturnType<typeof neuerJsonTransport> | undefined;
 
 /**
- * Verschickt eine Text-Mail. Wirft MailNichtKonfiguriertError (Route: 503) oder den
- * SMTP-Fehler (Route: 502, geloggt nur per mailFehlerCode).
+ * Verschickt eine Mail (Text, optional mit HTML). Wirft MailNichtKonfiguriertError (Route: 503)
+ * oder den SMTP-Fehler (Route: 502, geloggt nur per mailFehlerCode).
  */
 export async function sendeMail(mail: MailAuftrag): Promise<void> {
   if (!mail.an.trim()) throw new MailNichtKonfiguriertError("Empfänger fehlt");
@@ -118,8 +122,15 @@ export async function sendeMail(mail: MailAuftrag): Promise<void> {
     if (!testTransportAktiv()) throw new MailNichtKonfiguriertError("MAIL_TRANSPORT=json ist auf Vercel gesperrt");
     jsonTransport ??= neuerJsonTransport();
     const von = process.env.SMTP_FROM || "Functional Wiehl Website <abnahme@example.invalid>";
-    const info = await jsonTransport.sendMail({ from: von, to: mail.an, replyTo: mail.antwortAn, subject: betreff, text: mail.text });
-    const nachricht = JSON.parse(info.message) as { subject?: string; text?: string };
+    const info = await jsonTransport.sendMail({
+      from: von,
+      to: mail.an,
+      replyTo: mail.antwortAn,
+      subject: betreff,
+      text: mail.text,
+      html: mail.html,
+    });
+    const nachricht = JSON.parse(info.message) as { subject?: string; text?: string; html?: string };
     const senke = testSenke();
     senke.push({
       zeit: new Date().toISOString(),
@@ -128,6 +139,7 @@ export async function sendeMail(mail: MailAuftrag): Promise<void> {
       antwortAn: mail.antwortAn ?? null,
       betreff: nachricht.subject ?? "",
       text: nachricht.text ?? "",
+      html: nachricht.html ?? null,
     });
     if (senke.length > SENKE_MAX) senke.splice(0, senke.length - SENKE_MAX);
     return;
@@ -141,5 +153,6 @@ export async function sendeMail(mail: MailAuftrag): Promise<void> {
     replyTo: mail.antwortAn,
     subject: betreff,
     text: mail.text,
+    html: mail.html,
   });
 }

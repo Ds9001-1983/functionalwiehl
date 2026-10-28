@@ -6,12 +6,24 @@ import {
   KONTAKT_GRENZEN,
   LOESCHHINWEIS,
   MASS_GRENZEN,
+  MASS_GRUPPEN,
   MASSE,
   type MassId,
 } from "@/content/koerpermasse";
+import {
+  abschnittTitel,
+  esc,
+  kasten,
+  knopf,
+  kontaktKarte,
+  MAIL_FARBEN as F,
+  MAIL_SCHRIFT as SCHRIFT,
+  mailHtml,
+  telHref,
+} from "@/lib/mail-html";
 
 /**
- * Serverseitige Prüfung und Mailtext für „Körpermaße Digital“ (POST /api/koerpermasse/).
+ * Serverseitige Prüfung und Mail (Text und HTML) für „Körpermaße Digital“ (POST /api/koerpermasse/).
  * Fehler nennen nur den Feldnamen, nie den Wert – die Antwort darf geloggt werden,
  * die Werte nicht (Art. 9 DSGVO).
  */
@@ -78,8 +90,48 @@ const datumFormat = new Intl.DateTimeFormat("de-DE", { timeZone: BERLIN, day: "2
 const zeitFormat = new Intl.DateTimeFormat("de-DE", { timeZone: BERLIN, hour: "2-digit", minute: "2-digit" });
 const cmFormat = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
 
-/** Betreff „Körpermaße: Vorname Nachname (TT.MM.JJJJ)“, Text mit Zeilen wie „Oberschenkel Links: 55,5 cm“ */
-export function koerpermasseMail(daten: KoerpermasseDaten, eingang: Date): { betreff: string; text: string } {
+/** Maßtabelle: Links/Rechts-Paare nebeneinander, Rumpf (Bauch, Hüfte) je eine Zeile */
+function masseTabelle(masse: Record<MassId, number>): string {
+  const zelle = (inhalt: string, extra = "", spalten = 1) =>
+    `<td${spalten > 1 ? ` colspan="${spalten}"` : ""} style="padding:11px 14px;font-family:${SCHRIFT};font-size:15px;border-top:1px solid ${F.linie};${extra}">${inhalt}</td>`;
+  const wert = (id: MassId) => `<strong style="color:${F.text};">${esc(cmFormat.format(masse[id]))}</strong> <span style="color:${F.grau};">cm</span>`;
+  const kopf = `<tr style="background:${F.brand};">${["", "Links", "Rechts"]
+    .map((t, i) => `<td style="padding:9px 14px;font-family:${SCHRIFT};font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${F.creme};${i ? "text-align:right;" : ""}">${t}</td>`)
+    .join("")}</tr>`;
+  const zeilen = MASS_GRUPPEN.flatMap((g) => {
+    const teil = g.titel.replace(/\s*\(cm\)$/, "");
+    const [a, b] = g.felder;
+    if (a.label === "Links" && b.label === "Rechts") {
+      return [`<tr>${zelle(esc(teil), `color:${F.grau};`)}${zelle(wert(a.id), "text-align:right;")}${zelle(wert(b.id), "text-align:right;")}</tr>`];
+    }
+    return g.felder.map((f) => `<tr style="background:${F.flaeche};">${zelle(esc(f.name), `color:${F.grau};`)}${zelle(wert(f.id), "text-align:right;", 2)}</tr>`);
+  }).join("");
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;border:1px solid ${F.linie};border-radius:12px;overflow:hidden;">${kopf}${zeilen}</table>`;
+}
+
+function koerpermasseHtml(daten: KoerpermasseDaten, datum: string, zeit: string): string {
+  const name = `${daten.vorname} ${daten.nachname}`;
+  const tel = telHref(daten.handy);
+  return mailHtml({
+    titel: "Neue Körpermaße",
+    unterzeile: `Formular „Körpermaße Digital“ · Eingang ${datum}, ${zeit} Uhr`,
+    vorschau: `Körpermaße von ${name}, Eingang ${datum}, ${zeit} Uhr`,
+    inhalt:
+      kontaktKarte(name, [{ label: "Handy", wert: daten.handy, href: tel }], tel ? knopf(tel, "Anrufen") : "") +
+      abschnittTitel("Körpermaße") +
+      masseTabelle(daten.masse) +
+      abschnittTitel("Einwilligung") +
+      kasten(
+        `<strong>Erteilt am ${esc(datum)}, ${esc(zeit)} Uhr</strong> (Text-Stand ${esc(EINWILLIGUNG_TEXT_STAND)})<br>` +
+          `☑ ${esc(`${EINWILLIGUNG_DATENSCHUTZ.vor}${EINWILLIGUNG_DATENSCHUTZ.link}${EINWILLIGUNG_DATENSCHUTZ.nach}.`)}<br>` +
+          `☑ ${esc(EINWILLIGUNG_KOERPERMASSE)}`,
+      ),
+    fuss: esc(LOESCHHINWEIS),
+  });
+}
+
+/** Betreff „Körpermaße: Vorname Nachname (TT.MM.JJJJ)“, Text mit Zeilen wie „Oberschenkel Links: 55,5 cm“, dazu HTML */
+export function koerpermasseMail(daten: KoerpermasseDaten, eingang: Date): { betreff: string; text: string; html: string } {
   const datum = datumFormat.format(eingang);
   const zeit = zeitFormat.format(eingang);
   const name = `${daten.vorname} ${daten.nachname}`;
@@ -103,5 +155,5 @@ export function koerpermasseMail(daten: KoerpermasseDaten, eingang: Date): { bet
     LOESCHHINWEIS,
   ];
 
-  return { betreff: `Körpermaße: ${name} (${datum})`, text: zeilen.join("\n") };
+  return { betreff: `Körpermaße: ${name} (${datum})`, text: zeilen.join("\n"), html: koerpermasseHtml(daten, datum, zeit) };
 }

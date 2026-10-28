@@ -136,6 +136,13 @@ test.describe("Seite /koerpermasse/", () => {
     }
     expect(mail.text).toContain("Einwilligungen erteilt am");
     expect(mail.text).toContain("Art. 9 DSGVO");
+    // HTML-Fassung: alle Werte in der Tabelle, Handy als tel:-Link
+    for (const wert of ["55,5", "56", "38,2", "38,4", "33,1", "33,3", "88,8", "99,9"]) {
+      expect(mail.html, wert).toContain(`>${wert}</strong>`);
+    }
+    expect(mail.html).toContain('href="tel:01511234567"');
+    expect(mail.html).toContain(`Testine ${nachname}`);
+    expect(mail.html).not.toMatch(/undefined|\[object|NaN/);
 
     // Neue Messung: zurück zu Schritt 1, alles leer, ohne Neuladen
     await page.getByRole("button", { name: T.neueMessung }).click();

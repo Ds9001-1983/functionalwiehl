@@ -1,18 +1,12 @@
-import {
-  CHECKUP_TEXTE,
-  EINWILLIGUNG,
-  EINWILLIGUNG_STAND,
-  SCHRITT,
-  pruefeCheckup,
-  type CheckupDaten,
-} from "@/content/checkup-fragen";
+import { pruefeCheckup } from "@/content/checkup-fragen";
+import { checkupMail } from "@/lib/forms/checkup-mail";
 import { MailNichtKonfiguriertError, empfaenger, mailFehlerCode, sendeMail } from "@/lib/mailer";
 import { clientIp, gleicherOrigin, ipSchluessel } from "@/lib/request";
 import { upstashAusEnv } from "@/lib/upstash-rest";
 
 /**
- * Empfängt den Fitness- & Gesundheits-Check-up und schickt ihn als lesbare Text-Mail an
- * FORM_TO (gym@, Alfahosting-SMTP über lib/mailer.ts).
+ * Empfängt den Fitness- & Gesundheits-Check-up und schickt ihn als Mail (Text und HTML,
+ * lib/forms/checkup-mail.ts) an FORM_TO (gym@, Alfahosting-SMTP über lib/mailer.ts).
  *
  * Vertrag (design-review (a)-16): POST /api/checkup/ mit CheckupPayload
  *   { antworten, pfad, kontakt:{name,email,telefon}, einwilligungDatenschutz, einwilligungGesundheit, fw_hp, dauerMs }
@@ -114,57 +108,6 @@ async function begrenzeRate(headers: Headers): Promise<{ erlaubt: boolean; restS
   }
   stand ??= zaehleImSpeicher(schluessel);
   return { erlaubt: stand.anzahl <= maximum, restS: stand.restS };
-}
-
-// ---- Mail ----
-
-const DATUM = new Intl.DateTimeFormat("de-DE", {
-  timeZone: "Europe/Berlin",
-  dateStyle: "medium",
-  timeStyle: "short",
-});
-const ZAHL = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
-
-const zeile = (frage: string, antwort: string) =>
-  /[?:]$/.test(frage) ? `${frage} ${antwort}` : `${frage}: ${antwort}`;
-
-function antwortZeilen({ antworten, pfad }: CheckupDaten): string[] {
-  return pfad.flatMap((id) => {
-    const schritt = SCHRITT[id];
-    if (schritt.typ === "gewicht") {
-      return schritt.felder.map((f) => zeile(f.label, ZAHL.format(antworten[f.key] as number)));
-    }
-    const wert = antworten[schritt.key];
-    const text = typeof wert === "string" ? wert : (wert as readonly string[]).join(", ");
-    return [`${schritt.detail ? "  → " : ""}${zeile(schritt.mailTitel ?? schritt.titel, text)}`];
-  });
-}
-
-function checkupMail(daten: CheckupDaten, eingang: Date): { betreff: string; text: string } {
-  const { name, email, telefon } = daten.kontakt;
-  const text = [
-    `Neuer ${CHECKUP_TEXTE.titel} über die Website`,
-    `Eingang: ${DATUM.format(eingang)} Uhr`,
-    "",
-    "KONTAKT",
-    `Name: ${name}`,
-    `E-Mail: ${email}`,
-    `Telefon: ${telefon}`,
-    "",
-    // Häkchen 1 ist eine Kenntnisnahme, keine Einwilligung (DSE: übrige Angaben nach lit. b)
-    `BESTÄTIGUNG UND EINWILLIGUNG (beim Absenden angekreuzt, Text-Stand ${EINWILLIGUNG_STAND})`,
-    `[x] ${EINWILLIGUNG.datenschutz}`,
-    `[x] ${EINWILLIGUNG.gesundheit}`,
-    "",
-    "ANTWORTEN",
-    ...antwortZeilen(daten),
-    "",
-    "--",
-    "Diese Mail enthält Gesundheitsdaten (Art. 9 DSGVO). Nur für die Trainingsberatung verwenden,",
-    "nicht weiterleiten und nach der Bearbeitung löschen. „Antworten“ schreibt direkt an die Person.",
-  ].join("\n");
-  // Betreff ohne Gesundheitsdaten
-  return { betreff: `Neuer Check-up über die Website – ${name}`, text };
 }
 
 // ---- Route ----
