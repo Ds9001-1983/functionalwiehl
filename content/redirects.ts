@@ -46,6 +46,8 @@ export const REDIRECTS: { source: string; destination: string }[] = [
   { source: "/wp-sitemap.xml", destination: "/sitemap.xml" },
   { source: "/wp-sitemap-posts-page-1.xml", destination: "/sitemap.xml" },
   { source: "/wp-sitemap-users-1.xml", destination: "/sitemap.xml" },
+  // Alte Sitemap, 2023 in der Search Console eingereicht
+  { source: "/sitemap-6.xml", destination: "/sitemap.xml" },
   // OG-Bild der BN-Landingpage aus wp-content, damit geteilte Link-Vorschauen nicht brechen
   {
     source: "/wp-content/uploads/2026/10/black-november-functional-1080.jpg",

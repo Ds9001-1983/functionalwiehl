@@ -3,6 +3,12 @@ import { KONTAKT } from "./cta";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://functional-wiehl.de";
 
+/**
+ * Stand der Inhalte für <lastmod> in der Sitemap. Nur bei einer inhaltlichen Änderung der
+ * Seiten anpassen, nicht bei jedem Deploy: Google wertet lastmod nur aus, solange es verlässlich ist.
+ */
+export const INHALT_STAND = "2026-10-28";
+
 type PageSeo = {
   title: string;
   description: string;

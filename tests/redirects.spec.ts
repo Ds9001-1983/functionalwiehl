@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import robots from "../app/robots";
 import { ENTFALLENE_ROUTEN, KEINE_WEITERLEITUNG, REDIRECTS } from "../content/redirects";
-import { PAGES } from "../lib/seo";
+import { INHALT_STAND, PAGES } from "../lib/seo";
 
 /**
  * Weiterleitungen aus content/redirects.ts, Location EXAKT inklusive #anker
@@ -76,6 +76,16 @@ test("sitemap.xml listet genau die bleibenden Seiten, ohne LP und entfallene Rou
   expect(urls.sort()).toEqual(Object.values(PAGES).map((p) => p.path).sort());
   expect(xml).not.toContain("black-november");
   for (const route of ENTFALLENE_ROUTEN) expect(urls, route).not.toContain(route);
+  // lastmod für jede URL, damit Google die Seiten nach dem Umzug neu einliest
+  expect([...xml.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((m) => m[1].slice(0, 10))).toEqual(
+    urls.map(() => INHALT_STAND)
+  );
+});
+
+test("alte Sitemap aus der Search Console leitet auf die neue", async ({ request, baseURL }) => {
+  const res = await request.get("/sitemap-6.xml", ohneRedirect);
+  expect(res.status()).toBe(308);
+  expect(ziel(res.headers()["location"], baseURL!)).toBe("/sitemap.xml");
 });
 
 test("robots.ts sperrt nach der Freischaltung /api/ und /wp-json/", () => {
