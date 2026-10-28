@@ -14,10 +14,16 @@ export function JsonLd({ data }: { data: Record<string, unknown> }) {
   );
 }
 
+/** Google-Maps-Suche nach Studio und Adresse (Ziel für hasMap) */
+const MAPS_SUCHE =
+  "https://www.google.com/maps/search/?api=1&query=Functional+Wiehl+Wilhelm-Gr%C3%BCmer-Weg+18+51674+Wiehl";
+
 /**
  * Site-weites HealthClub/ExerciseGym-Schema (app/(site)/layout.tsx). Stand wie live
  * (27.10.2026): Monatspreise 37,00–59,00 €, Betreuungszeiten wie BETREUUNGSZEITEN in
  * lib/cta.ts, Mail gym@. Kein alternateName mit dem alten Studionamen (live nicht vorhanden).
+ * Seit 28.10.2026 für die lokale Suche zusätzlich geo (OpenStreetMap, Hausnummer genau),
+ * hasMap und areaServed (SEO-Plan im Vault, 60-Recherchen).
  */
 export const ORGANIZATION_JSONLD = {
   "@context": "https://schema.org",
@@ -39,6 +45,12 @@ export const ORGANIZATION_JSONLD = {
     addressRegion: "NRW",
     addressCountry: "DE",
   },
+  geo: { "@type": "GeoCoordinates", latitude: 50.94576, longitude: 7.58249 },
+  hasMap: MAPS_SUCHE,
+  areaServed: ["Wiehl", "Oberwiehl", "Bielstein", "Nümbrecht", "Gummersbach"].map((name) => ({
+    "@type": "Place",
+    name,
+  })),
   // 24/7-Zugang ist die maßgebliche Öffnungszeit eines 24h-Gyms;
   // die Betreuungszeiten stehen in der description und on-page.
   openingHoursSpecification: [

@@ -100,6 +100,12 @@ test.describe("Aufbau", () => {
     });
     expect(studio.alternateName).toBeUndefined();
     expect(studio.description).toContain("Mo–Fr 08:00–21:00");
+    // Lokale Suche: Koordinaten in Oberwiehl, Kartenlink, Einzugsgebiet mit Wiehl
+    expect(studio.geo).toMatchObject({ "@type": "GeoCoordinates" });
+    expect(studio.geo.latitude).toBeCloseTo(50.9458, 3);
+    expect(studio.geo.longitude).toBeCloseTo(7.5825, 3);
+    expect(studio.hasMap).toMatch(/^https:\/\/www\.google\.com\/maps\//);
+    expect(studio.areaServed.map((o: { name: string }) => o.name)).toContain("Wiehl");
   });
 });
 
