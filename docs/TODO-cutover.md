@@ -23,7 +23,7 @@ Alfahosting · **Grundlage:** `assets/raw/plan-2026-10-27/PLAN.md` (Entscheidung
 |---|---|
 | Hauptdomain | `functional-wiehl.de` (ohne www), `www` → 308 auf die Hauptdomain |
 | WordPress (alt) | Alfahosting, IP `109.237.132.28`, Nameserver `cns1.alfahosting.info` |
-| SMTP | `alfa3102.alfahosting-server.de:465`, Postfach gym@ (nicht `mail.functional-wiehl.de`: Zertifikat lautet auf `*.alfahosting-server.de`) |
+| SMTP | `alfa3102.alfahosting-server.de:587` (STARTTLS, 465 geht auch), Postfach gym@ (nicht `mail.functional-wiehl.de`: Zertifikat lautet auf `*.alfahosting-server.de`) |
 | Meta-Domainverifizierung | TXT `facebook-domain-verification=snffiuije1a574j1cpn13fi981px5k` |
 | Black November | aktiv bis 09.11.2026, 23:59; Löschdatum der Klickdaten **10.12.2026** |
 | n8n | Workflow `eHhcCrI24Jae2BQG` (BN26 → CAPI), Data Table `7ArobN9NrAvRU6tT` |
@@ -75,8 +75,8 @@ Alfahosting · **Grundlage:** `assets/raw/plan-2026-10-27/PLAN.md` (Entscheidung
 **0.3 Vercel (Pro-Team)** (D; K per Chrome nur nach OK)
 - [x] Domains `functional-wiehl.de` (primär) und `www` (308 auf die Hauptdomain) anlegen, **noch ohne DNS-Umstellung**. Zielwerte notieren: A-Record-IP für `@`, CNAME-Ziel für `www`.
 - [x] Upstash Redis über den Marketplace, Region Frankfurt, mit Production und Preview verbinden. Prüfen, welche Namen die Integration setzt (`KV_REST_API_*` oder `UPSTASH_REDIS_REST_*`, der Code nimmt beide).
-- [ ] Env-Werte laut Tabelle (ohne `NEXT_PUBLIC_ALLOW_INDEXING`). Stand 28.10.: alle ohne Secrets gesetzt (`SMTP_PORT` = 587, STARTTLS, geht ebenso). Es fehlen `BN_CLICK_USER`/`BN_CLICK_PASS`, `SMTP_USER`/`SMTP_PASS` und `ALERT_TO`; `FORM_TO` steht in Preview noch auf gym@.
-- [ ] Bypass-Token für die Deployment Protection erzeugen (für die curl-Prüfungen auf der Preview).
+- [x] Env-Werte laut Tabelle (ohne `NEXT_PUBLIC_ALLOW_INDEXING`), komplett seit 28.10.2026. `SMTP_PORT` = 587 (STARTTLS, geht ebenso wie 465), `FORM_TO` in Preview und `ALERT_TO` = info@superbrand.marketing, Preview hat ein eigenes BN-Testpaar.
+- [x] Bypass-Token für die Deployment Protection erzeugen (für die curl-Prüfungen auf der Preview). `vercel curl` legt ihn beim ersten Aufruf selbst an und schickt ihn mit.
 - [ ] Keine Firewall- oder Bot-Regel auf `/wp-json/*` (sonst blockiert sie n8n).
 
 **0.4 Links außerhalb der Website** (D sammelt, K prüft)
@@ -93,18 +93,18 @@ P0 Fundament → Worktrees parallel → Merge **P2 → P3 → P1**, je Rebase au
 - [x] K nach OK von D: Push nach `main` (Account Ds9001-1983, 27.10.2026). Vercel baut die Preview mit noindex.
 
 **Prüfungen auf der Preview** (K, Header `x-vercel-protection-bypass: <Token>` bei jedem curl; `$P` = Preview-URL)
-- [ ] Header (E15): `curl -sI "$P/" | grep -iE 'x-robots-tag|strict-transport|x-frame|content-security|permissions-policy'`
+- [x] Header (E15): `curl -sI "$P/" | grep -iE 'x-robots-tag|strict-transport|x-frame|content-security|permissions-policy'`
   → `x-robots-tag: noindex, nofollow`, **genau ein** `strict-transport-security` (setzt Vercel; `next.config.ts` sendet bewusst keinen), dazu die eigenen Sicherheits-Header.
-- [ ] Klickspeicher ohne 308 (design-p2 §5):
+- [x] Klickspeicher ohne 308 (design-p2 §5):
   - `curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' "$P/wp-json/sb-bn/v1/click/BN-ZZZZ"` → `401` ohne Redirect
   - `curl -s -u "$U:$PW" "$P/wp-json/sb-bn/v1/click/BN-ZZZZ"` → `{"found":false}`
   - POST mit `-H 'Content-Type: text/plain' -H "Origin: $P"` auf `…/click` → `204`, danach GET → `found:true`; Testcode wieder löschen (`npm run bn:migrate -- --delete <CODE>`).
-- [ ] `curl -sI "$P/black-november?utm_source=a&fbclid=b"` → 308 mit Query; `…/black-november/` → 200; `x-vercel-id` zeigt `fra1`; TTFB notieren.
-- [ ] SMTP (D legt `.env.local` mit den SMTP-Werten an, z. B. per `vercel env pull`; K liest die Datei nicht aus):
+- [x] `curl -sI "$P/black-november?utm_source=a&fbclid=b"` → 308 mit Query; `…/black-november/` → 200; `x-vercel-id` zeigt `fra1`; TTFB notieren.
+- [x] SMTP (D legt `.env.local` mit den SMTP-Werten an, z. B. per `vercel env pull`; K liest die Datei nicht aus):
   - `npm run check:smtp` → `SMTP OK: alfa3102.alfahosting-server.de:465 (TLS) als gym@…`, keine Warnung
   - `npm run check:smtp -- --an <Adresse von Dennis>` → D prüft im Header `spf=pass`, `dkim=pass` (Selector `cloudpit`), `dmarc=pass`
   - `.env.local` danach löschen.
-- [ ] Je eine Testeinsendung Check-up (`/#checkup`) und Körpermaße (`/koerpermasse/`) mit Namen „TEST“ → kommt bei `FORM_TO` (Preview: Dennis) an, Betreff „Körpermaße: TEST … (TT.MM.JJJJ)“.
+- [x] Je eine Testeinsendung Check-up (`/#checkup`) und Körpermaße (`/koerpermasse/`) mit Namen „TEST“ → kommt bei `FORM_TO` (Preview: Dennis) an, Betreff „Körpermaße: TEST … (TT.MM.JJJJ)“.
 - [ ] D: Pixel Helper auf LP (Pixel ohne Einwilligung) und Startseite (erst nach Einwilligung).
 
 **In Meta prüfen** (lesend, D oder MCP)
