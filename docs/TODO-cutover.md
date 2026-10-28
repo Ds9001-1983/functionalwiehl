@@ -117,25 +117,26 @@ P0 Fundament → Worktrees parallel → Merge **P2 → P3 → P1**, je Rebase au
       `page_view` sendet. Entweder die Option abschalten (Schreibaktion: D) oder K entfernt das manuelle
       `page_view` für GA4 (der Pixel braucht seins weiter, `disablePushState`).
 
-**Gate vor Schritt 4:** C gibt Impressum, Datenschutz und Barrierefreiheit frei (offene Punkte unten).
+**Gate vor Schritt 4:** C gibt Impressum, Datenschutz und Barrierefreiheit frei (offene Punkte unten). Am 28.10.2026 hat D entschieden, ohne Connys Freigabe umzuschalten; D klärt die Punkte mit C, K zieht Änderungen danach nach.
 
 ## Schritt 4 – Umschalten (nachts, frühestens 24 h nach der TTL-Senkung, Chrome nur mit OK)
 
 **Vorbedingungen:** TTL seit ≥ 24 h auf 300 (K: dig) · Freigabe C · Preview-Prüfungen grün · Code-Liste für die Migration liegt vor (K zieht nur die Spalte `code` aus der n8n Data Table `7ArobN9NrAvRU6tT` per n8n-MCP, lesend, Datei außerhalb des Repos; Entscheidung Dennis 27.10.: n8n-Tabelle statt DB-Vollexport).
 
-1. [ ] D: `NEXT_PUBLIC_ALLOW_INDEXING=true` und `NEXT_PUBLIC_SITE_URL` in Production setzen, **Production-Deploy**.
+1. [x] D: `NEXT_PUBLIC_ALLOW_INDEXING=true` und `NEXT_PUBLIC_SITE_URL` in Production setzen, **Production-Deploy**.
    - K prüft auf der Production-URL `*.vercel.app`: weiterhin `x-robots-tag: noindex` (Regel nach Host), Klickspeicher-Testcode POST/GET wie oben, danach Testcode löschen.
-2. [ ] K (Freigabe D): **Migrationslauf 1** `npm run bn:migrate -- --codes <Datei>` (ohne IP-Pinning).
-3. [ ] DNS bei Alfahosting (D oder K per Chrome nach OK):
+2. [x] K (Freigabe D): **Migrationslauf 1** `npm run bn:migrate -- --codes <Datei>` (ohne IP-Pinning).
+3. [x] DNS bei Alfahosting (D oder K per Chrome nach OK), umgestellt am 28.10.2026 um 15:31 Uhr. Vorher hat Vercel das Zertifikat per DNS-Challenge ausgestellt (`vercel certs issue … --challenge-only`, TXT `_acme-challenge` und `_acme-challenge.www`), deshalb gab es keine Minute mit Zertifikatsfehler. cns2 lieferte für `www` noch rund 2 Minuten den alten A-Eintrag aus dem Cache:
    - `@` A 109.237.132.28 → **zwei** A-Records `216.150.1.1` und `216.150.16.1` (Vercel-Empfehlung Rang 1, Stand 27.10.; Rang 2 wäre `76.76.21.21`)
    - `www`: A 109.237.132.28 löschen (seit 27.10. eigener Eintrag mit TTL 300), CNAME → `fbddb5fbb4f53f2c.vercel-dns-017.com`
    - `app.` (Fitness-App bei Hetzner) und `rm01`/`rm._domainkey` (Rapidmail) ebenfalls nicht anfassen
    - SPF `v=spf1 a mx include:secure-mailgate.com ~all` → `v=spf1 ip4:109.237.132.28 mx include:secure-mailgate.com ~all` (nur **ein** SPF-Eintrag; `a` zeigte sonst auf Vercel)
    - **Nicht anfassen:** NS, MX, `mail`, DKIM, DMARC, Google-TXT, FB-TXT, Wildcard
-4. [ ] K: `dig +short functional-wiehl.de A @1.1.1.1` (ebenso `@8.8.8.8`, `@9.9.9.9`, `@cns1.alfahosting.info`), Zertifikat in Vercel abwarten, dann
+4. [x] K: `dig +short functional-wiehl.de A @1.1.1.1` (ebenso `@8.8.8.8`, `@9.9.9.9`, `@cns1.alfahosting.info`), Zertifikat in Vercel abwarten, dann
    `curl -sI https://functional-wiehl.de/` (200, **kein** `x-robots-tag`, genau ein HSTS), `curl -sI https://www.functional-wiehl.de/` (308 → Hauptdomain), `curl -sI http://functional-wiehl.de/` (→ https).
-5. [ ] K (Freigabe D): **Lauf 2** mit `--wp-ip 109.237.132.28` und aktueller Code-Liste. Nach 2 × TTL (≥ 10 min) **Lauf 3** (letzter Lauf).
+5. [x] K (Freigabe D): **Lauf 2** mit `--wp-ip 109.237.132.28` und aktueller Code-Liste. Nach 2 × TTL (≥ 10 min) **Lauf 3** (letzter Lauf).
 6. [ ] **WP-Webroot sperren**, direkt nach Lauf 3 (D im Panel oder K per Chrome nach OK): `.htaccess` mit `Require all denied` oder Domain auf einen leeren Ordner, PHP für die Domain aus.
+   Stand 28.10.2026: Umgesetzt über Confixx (Kunde web2330 → Einstellungen → Domains → „Weiterleiten nach“). functional-wiehl.de zeigt auf `https://www.functional-wiehl.de/`, weil Confixx keine Weiterleitung einer Domain auf sich selbst erlaubt; www zeigt auf `https://functional-wiehl.de/`. Die Domain nicht aus dem Konto löschen (Postfächer!) und PHP nicht abschalten (PHP-Dateien wären sonst womöglich als Text lesbar). **Offen:** injoy-wiehl.de und www.injoy-wiehl.de stehen noch auf `/` und liefern über die alte IP WordPress (D).
    K, Gegenprobe (alles 403 oder 404):
    ```sh
    for p in "" wp-login.php xmlrpc.php wp-json/ wp-admin/admin-ajax.php; do
@@ -151,15 +152,15 @@ P0 Fundament → Worktrees parallel → Merge **P2 → P3 → P1**, je Rebase au
 
 ## Schritt 5 – Nachkontrolle (gleiche Nacht und folgende Tage)
 
-- [ ] K: Ad-URL ohne Weiterleitung: `curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' 'https://functional-wiehl.de/black-november/?utm_source=facebook&utm_campaign=bn26&fbclid=test'` → `200` ohne Ziel.
-- [ ] K: `npm run check:redirects -- https://functional-wiehl.de` und `npm run test:live` (lesend, keine Formular-Absendungen).
+- [x] K: Ad-URL ohne Weiterleitung: `curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' 'https://functional-wiehl.de/black-november/?utm_source=facebook&utm_campaign=bn26&fbclid=test'` → `200` ohne Ziel.
+- [x] K: `npm run check:redirects -- https://functional-wiehl.de` und `npm run test:live` (lesend, keine Formular-Absendungen). check:redirects grün; `test:live` findet keine Tests, im Repo ist kein Test als `@live` markiert.
 - [ ] K: Klickspeicher `curl -s -u "$U:$PW" https://functional-wiehl.de/wp-json/sb-bn/v1/click/<migrierter Code>` → `found:true`.
 - [ ] D: n8n-Durchlauf mit `test_event_code` (Schreibaktion in n8n, nur D) → fbc und fbp im Events Manager; sonst einen echten Lead prüfen.
 - [ ] D (K lesend im Network-Tab): ViewContent, `BN_Engaged`, Contact `bnc-…` kommen an, Custom Conversion feuert, Domainverifizierung grün. Pixel auf der LP ohne, sonst nur mit Einwilligung.
 - [ ] D (eigenes Handy): Superchat „Mitglied werden“, „Probetraining“ und „Black November“ je einmal live auslösen.
 - [ ] Je eine Testeinsendung Check-up und Körpermaße mit „TEST“; C bestätigt den Eingang in gym@ und löscht beide.
 - [ ] D/K: Mail über gym@ und info@ senden und empfangen, SPF, DKIM und DMARC im Header.
-- [ ] D: Search Console: `/sitemap.xml` einreichen, `wp-sitemap.xml` entfernen, Abdeckung und 404 eine Woche beobachten.
+- [ ] D: Search Console: `/sitemap.xml` einreichen, `wp-sitemap.xml` entfernen, Abdeckung und 404 eine Woche beobachten. Stand 28.10.: Sitemap eingereicht (Konto sasse.dennis@googlemail.com), die alte `sitemap-6.xml` leitet per 308 weiter, Neuindexierung der Startseite beantragt. Beobachten läuft. SEO-Plan im Vault (60-Recherchen, 28.10.).
 - [ ] D/K: Links aus 0.4 noch einmal prüfen.
 - [ ] D: Vercel-Logs in den ersten zwei Wochen täglich (Vercel Pro hält Runtime-Logs nur 1 Tag): `[bn-click]` (Fehltreffer = Migrationslücke), `[form:koerpermasse]` und `[form:checkup]` (nur Codes, nie Inhalte). Danach siehe „Überwachung im Betrieb“.
 
