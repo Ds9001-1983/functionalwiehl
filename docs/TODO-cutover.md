@@ -63,19 +63,19 @@ Alfahosting · **Grundlage:** `assets/raw/plan-2026-10-27/PLAN.md` (Entscheidung
 - [ ] Vorher prüfen, welche weiteren Domains und Seiten im Paket liegen (betrifft das PHP-Update, E4).
 - [ ] WP-Backup **verschlüsselt** (Dateien und DB), Aufbewahrung festlegen. Umfang (E6): Code-Snippet #6, Handler `fitness_checkup_submit` und `process_measurement_data`, Complianz-Nachweise, Matomo-Export. Darin liegen IP/UA-Klickdaten (Löschung zum 10.12.).
 - [ ] D: In der DB prüfen, ob Check-up- oder Körpermaße-Einsendungen gespeichert sind → an C exportieren oder löschen (C12).
-- [ ] TTL für `@` und `www` auf **300**. **Ab hier laufen die 24 h bis zum frühesten Umschalten.**
+- [x] TTL für `@` und `www` auf **300** (27.10.2026, ca. 12:50, Serial 2026102710). **Ab hier laufen die 24 h bis zum frühesten Umschalten.**
   - K prüft: `dig +noall +answer @cns1.alfahosting.info functional-wiehl.de A` und `… www.functional-wiehl.de` zeigen TTL 300.
-- [ ] TXT `facebook-domain-verification=…` (Wert oben) setzen.
+- [x] TXT `facebook-domain-verification=…` (Wert oben) setzen.
   - K prüft: `dig +short TXT functional-wiehl.de @1.1.1.1` und `@8.8.8.8`; D prüft im Business Manager.
-- [ ] Prüfen, ob es einen eigenen A-Record `mail` → `109.237.132.28` gibt, sonst anlegen. Wildcard, MX, DKIM, DMARC nicht anfassen.
+- [x] Prüfen, ob es einen eigenen A-Record `mail` → `109.237.132.28` gibt, sonst anlegen. Wildcard, MX, DKIM, DMARC nicht anfassen.
 - [ ] PHP auf eine abgesicherte Version heben (8.2.35, 8.3.36, 8.4.27 oder 8.5.12+), danach Startseite, `/black-november/` und Formulare testen.
 - [ ] `xmlrpc.php` sperren (`Require all denied`), Basic Auth vor `wp-login.php`, Admin `web2330` umbenennen. `/wp-json/` und `admin-ajax.php` bleiben bis zum Umschalten offen (LP und Formulare laufen darüber).
   - K prüft: `curl -s -o /dev/null -w '%{http_code}\n' https://functional-wiehl.de/xmlrpc.php` → 403, `…/wp-login.php` → 401.
 
 **0.3 Vercel (Pro-Team)** (D; K per Chrome nur nach OK)
-- [ ] Domains `functional-wiehl.de` (primär) und `www` (308 auf die Hauptdomain) anlegen, **noch ohne DNS-Umstellung**. Zielwerte notieren: A-Record-IP für `@`, CNAME-Ziel für `www`.
-- [ ] Upstash Redis über den Marketplace, Region Frankfurt, mit Production und Preview verbinden. Prüfen, welche Namen die Integration setzt (`KV_REST_API_*` oder `UPSTASH_REDIS_REST_*`, der Code nimmt beide).
-- [ ] Env-Werte laut Tabelle (ohne `NEXT_PUBLIC_ALLOW_INDEXING`).
+- [x] Domains `functional-wiehl.de` (primär) und `www` (308 auf die Hauptdomain) anlegen, **noch ohne DNS-Umstellung**. Zielwerte notieren: A-Record-IP für `@`, CNAME-Ziel für `www`.
+- [x] Upstash Redis über den Marketplace, Region Frankfurt, mit Production und Preview verbinden. Prüfen, welche Namen die Integration setzt (`KV_REST_API_*` oder `UPSTASH_REDIS_REST_*`, der Code nimmt beide).
+- [ ] Env-Werte laut Tabelle (ohne `NEXT_PUBLIC_ALLOW_INDEXING`). Stand 28.10.: alle ohne Secrets gesetzt (`SMTP_PORT` = 587, STARTTLS, geht ebenso). Es fehlen `BN_CLICK_USER`/`BN_CLICK_PASS`, `SMTP_USER`/`SMTP_PASS` und `ALERT_TO`; `FORM_TO` steht in Preview noch auf gym@.
 - [ ] Bypass-Token für die Deployment Protection erzeugen (für die curl-Prüfungen auf der Preview).
 - [ ] Keine Firewall- oder Bot-Regel auf `/wp-json/*` (sonst blockiert sie n8n).
 
@@ -90,7 +90,7 @@ P0 Fundament → Worktrees parallel → Merge **P2 → P3 → P1**, je Rebase au
 ## Schritt 3 – Integration und Preview
 
 - [x] K: Integrations-Commit (README, Alias `CTA.whatsappVertrag` entfernen), `npm run abnahme` grün, Bericht an D. Branch `golive/integration`, per Fast-Forward nach `main` (27.10.2026, noch nicht gepusht).
-- [ ] K nach OK von D: Push nach `main` (Account Ds9001-1983). Vercel baut die Preview mit noindex.
+- [x] K nach OK von D: Push nach `main` (Account Ds9001-1983, 27.10.2026). Vercel baut die Preview mit noindex.
 
 **Prüfungen auf der Preview** (K, Header `x-vercel-protection-bypass: <Token>` bei jedem curl; `$P` = Preview-URL)
 - [ ] Header (E15): `curl -sI "$P/" | grep -iE 'x-robots-tag|strict-transport|x-frame|content-security|permissions-policy'`
