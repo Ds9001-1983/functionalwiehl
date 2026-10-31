@@ -100,6 +100,7 @@ test.describe("Aufbau", () => {
     });
     expect(studio.alternateName).toBeUndefined();
     expect(studio.description).toContain("Mo–Fr 08:00–21:00");
+    expect(studio.description).toContain("Sa 10:00–14:00");
     // Lokale Suche: Koordinaten in Oberwiehl, Kartenlink, Einzugsgebiet mit Wiehl
     expect(studio.geo).toMatchObject({ "@type": "GeoCoordinates" });
     expect(studio.geo.latitude).toBeCloseTo(50.9458, 3);

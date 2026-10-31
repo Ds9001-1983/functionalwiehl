@@ -70,7 +70,7 @@ export const ORGANIZATION_JSONLD = {
     },
   ],
   description:
-    "Fitnessstudio in Wiehl mit 24/7-Zugang. Betreuung Mo–Fr 08:00–21:00 Uhr, So 10:00–14:00 Uhr, Samstag ohne Betreuung.",
+    "Fitnessstudio in Wiehl mit 24/7-Zugang. Betreuung Mo–Fr 08:00–21:00 Uhr, Sa 10:00–14:00 Uhr, Sonntag ohne Betreuung.",
   priceRange: "37,00–59,00 € pro Monat",
   amenityFeature: [
     { "@type": "LocationFeatureSpecification", name: "24/7-Zugang", value: true },

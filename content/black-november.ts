@@ -54,7 +54,7 @@ export const BN_HERO = {
   cta: "Jetzt per WhatsApp sichern",
   micro: "Kein Formular, keine Online-Anmeldung: Nachricht ist vorbereitet, einfach absenden – wir melden uns.",
   chipsAria: "Das Wichtigste auf einen Blick",
-  chips: ["24/7 geöffnet", "Betreuung Mo–Fr & So", "Kostenlose Parkplätze", "Barrierefrei zugänglich"],
+  chips: ["24/7 geöffnet", "Betreuung Mo–Fr & Sa", "Kostenlose Parkplätze", "Barrierefrei zugänglich"],
 } as const;
 
 export const BN_RECHNUNG = {
@@ -81,7 +81,7 @@ export const BN_LEISTUNGEN = {
       text: "Smart-, Pin- & Plate-Loaded Kraftgeräte, Freihantel-Area und Functional Area.",
     },
     { icon: "puls", titel: "Cardio", text: "Laufbänder, Crosstrainer & Spinning Bikes, Ergometer und Rudergeräte." },
-    { icon: "person", titel: "Betreuung", text: "Trainer vor Ort Mo–Fr 08:00–21:00 Uhr und So 10:00–14:00 Uhr." },
+    { icon: "person", titel: "Betreuung", text: "Trainer vor Ort Mo–Fr 08:00–21:00 Uhr und Sa 10:00–14:00 Uhr." },
   ],
   bilderAlt: {
     flaeche: "Trainingsfläche im Functional Wiehl mit Kraft- und Cardiogeräten",

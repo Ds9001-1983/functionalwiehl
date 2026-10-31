@@ -148,7 +148,7 @@ test.describe("Inhalt wie live", () => {
       "Kein Formular, keine Online-Anmeldung: Nachricht ist vorbereitet, einfach absenden – wir melden uns.",
       "Ehrlich gerechnet, ohne Kleingedrucktes-Überraschung: 12 Monate Mitgliedschaft, davon die ersten 6 Monate zum halben Preis.",
       "*Bei Abschluss einer 12-monatigen Mitgliedschaft: 50 % auf den monatlichen Beitrag, 6 Monate lang. Danach 45,00 € pro Monat. Zzgl. einmaliger Startgebühr von 79,00 € und 20,00 € Chip-Kaution.",
-      "Trainer vor Ort Mo–Fr 08:00–21:00 Uhr und So 10:00–14:00 Uhr.",
+      "Trainer vor Ort Mo–Fr 08:00–21:00 Uhr und Sa 10:00–14:00 Uhr.",
       "Anmeldung läuft ausschließlich über WhatsApp – schneller geht's nicht.",
       "Ab Monat 7 zahlst du den regulären Beitrag von 45,00 € pro Monat. Die Mitgliedschaft läuft insgesamt 12 Monate.",
       "Ja, einmalig 79,00 € plus 20,00 € Kaution für deinen Zugangschip.",

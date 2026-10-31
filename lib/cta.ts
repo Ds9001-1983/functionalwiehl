@@ -61,12 +61,12 @@ export const KONTAKT = {
   mailRecht: "info@functional-wiehl.de",
 } as const;
 
-/** Öffnungs- und Betreuungszeiten, Wortlaut wie live (#kontakt, Stand 27.10.2026) */
+/** Öffnungs- und Betreuungszeiten (#kontakt, Stand 31.10.2026) */
 export const BETREUUNGSZEITEN = {
   zugang: { label: "24/7 Zugang", wert: "IMMER GEÖFFNET" },
   zeilen: [
     { label: "Betreuung Mo-Fr", wert: "08:00 – 21:00" },
-    { label: "Samstag", wert: "ohne Betreuung" },
-    { label: "Betreuung So", wert: "10:00 – 14:00" },
+    { label: "Betreuung Sa", wert: "10:00 – 14:00" },
+    { label: "Sonntag", wert: "ohne Betreuung" },
   ],
 } as const;
