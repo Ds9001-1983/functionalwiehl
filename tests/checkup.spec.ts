@@ -1,4 +1,5 @@
 import { createServer } from "node:net";
+import { tmpdir } from "node:os";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import {
@@ -13,7 +14,8 @@ import {
 } from "../content/checkup-fragen";
 import { POST } from "../app/api/checkup/route";
 import { CTA } from "../lib/cta";
-import { erwarteTestMail, holeTestMails } from "./helpers/mails";
+import { testMails } from "../lib/mailer";
+import { erwarteTestMail, holeTestMails, liesPdf } from "./helpers/mails";
 import { TEST_ENV } from "./helpers/test-env";
 
 /**
@@ -206,6 +208,46 @@ test.describe("Quiz im Browser", () => {
       expect(mail.text.split("\n"), zeile).toContain(zeile);
     }
     expect(mail.text).not.toContain("Bisherige Versuche");
+
+    // PDF-Anhang mit denselben Angaben, zum Ablegen in einem anderen System
+    expect(mail.text).toContain("Im Anhang: derselbe Check-up als PDF für die Ablage.");
+    expect(mail.html).toContain("Im Anhang: derselbe Check-up als PDF für die Ablage.");
+    expect(mail.anhaenge).toHaveLength(1);
+    const [anhang] = mail.anhaenge;
+    expect(anhang.typ).toBe("application/pdf");
+    const kennung = name.split(" ").at(-1);
+    expect(anhang.dateiname).toMatch(new RegExp(`^Check-up_Test-Muskel-${kennung}_\\d{4}-\\d{2}-\\d{2}_\\d{4}\\.pdf$`));
+    expect(anhang.groesse).toBeLessThan(150_000);
+    const pdf = await liesPdf(anhang);
+    expect(new TextDecoder().decode(pdf.bytes.slice(0, 5))).toBe("%PDF-");
+    expect(pdf.titel).toMatch(new RegExp(`^Check-up ${name} – \\d{2}\\.\\d{2}\\.\\d{4}, \\d{2}:\\d{2} Uhr$`));
+    for (const stelle of [
+      name,
+      "E-Mail muskel@example.com",
+      "Telefon 0151 / 123 456-78",
+      "AUF EINEN BLICK",
+      "Ziel Muskeln & Körperstruktur – Muskelaufbau",
+      "Gesundheit: bitte beachten • Herz-Kreislauf: Bluthochdruck, KHK • Orthopädisch • Medikamente: Schmerzmittel",
+      "Dein Beruf sitzend",
+      "Fokusbereich Muskelaufbau",
+      "Aktuelles Gewicht (kg) 82,5",
+      "Wunschgewicht (kg) 75",
+      "Was für ein Training hast du gemacht? Geräte, Kurse",
+      "Welche Erkrankung hast du? Bluthochdruck, KHK",
+      "Welche orthopädischen Beschwerden hast du? Keine Angabe",
+      "Hast du sonstige Erkrankungen? Nein",
+      "Welche nimmst du? Schmerzmittel",
+      "Hattest du eine OP in den letzten 12 Monaten? Nein",
+      `Beim Absenden angekreuzt (Text-Stand ${EINWILLIGUNG_STAND})`,
+      EINWILLIGUNG.datenschutz,
+      EINWILLIGUNG.gesundheit,
+      `Seite 1 von ${pdf.seiten}`,
+      "Enthält Gesundheitsdaten (Art. 9 DSGVO)",
+    ]) {
+      expect(pdf.text, stelle).toContain(stelle);
+    }
+    expect(pdf.text).not.toContain("Bisherige Versuche");
+    expect(pdf.text).not.toMatch(/undefined|\[object|NaN/);
   });
 
   test("Zurück über den Verlauf: Auswahl bleibt, verlassene Zweige werden nicht gesendet", async ({
@@ -583,6 +625,30 @@ test.describe("POST /api/checkup/ (HTTP)", () => {
     expect(mail.html).toMatch(/<div style="display:none[^>]*>Check-up von Test &lt;b[^<]*Uhr<\/div>/);
   });
 
+  test("PDF-Anhang: Namen mit Sonderzeichen lesbar, Emoji entfällt, Dateiname nur ASCII", async ({ request }) => {
+    const name = eindeutig("Jürgen Łukasz Şükrü 💪");
+    const res = await request.post(API, { data: payload(name) });
+    expect(res.status()).toBe(200);
+    const mail = await erwarteTestMail(request, { an: TEST_ENV.FORM_TO, betreff: name });
+    expect(mail.anhaenge).toHaveLength(1);
+    const [anhang] = mail.anhaenge;
+    const kennung = name.split(" ").at(-1);
+    expect(anhang.dateiname).toMatch(new RegExp(`^Check-up_Juergen-Lukasz-Suekrue-${kennung}_\\d{4}-\\d{2}-\\d{2}_\\d{4}\\.pdf$`));
+
+    const pdf = await liesPdf(anhang);
+    const lesbar = `Jürgen Łukasz Şükrü ${kennung}`;
+    expect(pdf.titel.startsWith(`Check-up ${lesbar} – `), pdf.titel).toBe(true);
+    expect(pdf.autor).toBe("Functional-Wiehl GmbH (Website)");
+    expect(pdf.text).toContain(`${lesbar} E-Mail api@example.com Telefon 02262 752717`);
+    expect(pdf.text).toContain(`Check-up von ${lesbar} · Eingang`);
+    expect(pdf.text).not.toContain("💪");
+    // kürzester Pfad mit Bluthochdruck (ANTWORTEN)
+    expect(pdf.text).toContain("Gesundheit: bitte beachten • Herz-Kreislauf: Bluthochdruck");
+    expect(pdf.text).toContain("Fokusbereich Stressabbau");
+    expect(pdf.text).toContain("Bisherige Versuche Sport, Ernährung");
+    expect(pdf.text).toContain("Was für ein Training hast du gemacht? Keine Angabe");
+  });
+
   test("Honeypot gefüllt oder unmöglich schnell → 200 ohne Versand", async ({ request }) => {
     const name = eindeutig("Test Bot");
     for (const extra of [{ fw_hp: "https://spam.example" }, { dauerMs: 400 }]) {
@@ -673,7 +739,7 @@ test.describe("Route-Handler direkt: Versandfehler", () => {
       });
     });
 
-  /** Ruft POST mit eigener Env auf und sammelt alles, was der Handler loggt. */
+  /** Ruft POST mit eigener Env auf und sammelt alles, was der Handler loggt (und bei MAIL_TRANSPORT=json die Testsenke). */
   async function aufruf(env: Record<string, string>, body: unknown) {
     const vorher = { ...process.env };
     const logs: string[] = [];
@@ -704,7 +770,9 @@ test.describe("Route-Handler direkt: Versandfehler", () => {
           body: typeof body === "string" ? body : JSON.stringify(body),
         })
       );
-      return { status: res.status, json: await res.json(), cache: res.headers.get("cache-control"), logs };
+      const json = await res.json();
+      // noch mit der Env des Aufrufs: Die Testsenke ist nur bei MAIL_TRANSPORT=json lesbar
+      return { status: res.status, json, cache: res.headers.get("cache-control"), logs, mails: testMails() };
     } finally {
       Object.assign(console, konsole);
       for (const k of Object.keys(process.env)) if (!(k in vorher)) delete process.env[k];
@@ -747,6 +815,29 @@ test.describe("Route-Handler direkt: Versandfehler", () => {
     expect(r.logs).toHaveLength(1);
     expect(r.logs[0]).toMatch(/^\[form:checkup\] versand E[A-Z]+/);
     ohneInhalte(r.logs);
+  });
+
+  test("PDF lässt sich nicht erstellen → Mail trotzdem raus, ohne Anhang, mit Hinweis, nur Code im Log", async () => {
+    // Ohne die Schriften (anderes Arbeitsverzeichnis) scheitert das PDF; die Testsenke läuft im Testprozess
+    const name = eindeutig("Erika Geheim");
+    const vorher = process.cwd();
+    process.chdir(tmpdir());
+    let r: Awaited<ReturnType<typeof aufruf>>;
+    try {
+      r = await aufruf({ MAIL_TRANSPORT: "json" }, { ...geheim, kontakt: { name, email: "erika@example.com", telefon: "0151 999" } });
+    } finally {
+      process.chdir(vorher);
+    }
+    expect(r.status).toBe(200);
+    expect(r.json).toEqual({ ok: true });
+    expect(r.logs).toEqual(["[form:checkup] pdf ENOENT"]);
+    ohneInhalte(r.logs);
+    const mail = r.mails.find((m) => m.betreff.includes(name));
+    expect(mail, "Mail in der Testsenke").toBeDefined();
+    expect(mail!.anhaenge).toEqual([]);
+    expect(mail!.text).toContain("Hinweis: Das PDF konnte nicht erstellt werden. Alle Angaben stehen vollständig in dieser Mail.");
+    expect(mail!.html).toContain("Hinweis: Das PDF konnte nicht erstellt werden.");
+    expect(mail!.text).toContain("  → Welche Erkrankung hast du? Bluthochdruck");
   });
 
   test("Body über 32 KB ohne Content-Length → 413 (gestreamt gezählt)", async () => {

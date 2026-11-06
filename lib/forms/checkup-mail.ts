@@ -1,89 +1,37 @@
+import { CHECKUP_TEXTE, EINWILLIGUNG, EINWILLIGUNG_STAND, type CheckupDaten } from "@/content/checkup-fragen";
+import { aufEinenBlick, bereiche, DATUM, gesundheitHinweise, zeilenFuer } from "@/lib/forms/checkup-bericht";
 import {
-  CHECKUP_TEXTE,
-  EINWILLIGUNG,
-  EINWILLIGUNG_STAND,
-  KEINE_ANGABE,
-  SCHRITT,
-  type CheckupDaten,
-  type SchrittId,
-} from "@/content/checkup-fragen";
-import { abschnittTitel, esc, kasten, knopf, kontaktKarte, mailHtml, telHref, zeilenTabelle, type MailZeile } from "@/lib/mail-html";
+  abschnittTitel,
+  esc,
+  kasten,
+  knopf,
+  kontaktKarte,
+  MAIL_FARBEN,
+  MAIL_SCHRIFT,
+  mailHtml,
+  telHref,
+  zeilenTabelle,
+} from "@/lib/mail-html";
 
 /**
  * Mail an FORM_TO für den Check-up (POST /api/checkup/): Text-Fassung (Zeilen „Frage: Antwort“,
  * von den Tests geprüft) und HTML-Fassung mit Kontaktkarte, „Auf einen Blick“ und den Antworten
  * nach Bereichen. Betreff und Vorschauzeile ohne Gesundheitsdaten.
+ *
+ * Dieselben Angaben hängen als PDF an der Mail (lib/forms/checkup-pdf.ts), damit das Team den
+ * Check-up in einem anderen System ablegen kann. `anhang` sagt, ob das PDF dabei ist.
  */
 
-const DATUM = new Intl.DateTimeFormat("de-DE", {
-  timeZone: "Europe/Berlin",
-  dateStyle: "medium",
-  timeStyle: "short",
-});
-const ZAHL = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
+/** "pdf" = PDF hängt an, "fehlt" = PDF ließ sich nicht erstellen, die Mail geht trotzdem raus */
+export type CheckupAnhang = "pdf" | "fehlt";
 
-/** Bereiche der HTML-Fassung, ab „11“ Gesundheitsdaten (Art. 9 DSGVO) */
-const BEREICHE: readonly { titel: string; ids: readonly SchrittId[] }[] = [
-  { titel: "Über dich", ids: ["2", "3", "4"] },
-  { titel: "Ziele", ids: ["5", "F6A", "F6B", "F6C", "F6D", "7", "F7E"] },
-  { titel: "Training", ids: ["8", "9", "10"] },
-  {
-    titel: "Gesundheit",
-    ids: ["11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26"],
-  },
-];
-const GESUNDHEIT = new Set<SchrittId>(BEREICHE[3].ids);
-
-/** Kurzname je Gesundheitsfrage für „Auf einen Blick“ (Schlüssel = Live-Feldnamen) */
-const KURZ: Readonly<Record<string, string>> = {
-  aerztliche_behandlung: "In ärztlicher Behandlung",
-  herz_kreislauf: "Herz-Kreislauf",
-  venenerkrankung: "Venen",
-  atemwegs_erkrankung: "Atemwege",
-  stoffwechsel_erkrankung: "Stoffwechsel",
-  orthopaedische_beschwerden: "Orthopädisch",
-  psychische_erkrankung: "Psychische Erkrankung",
-  sonstige_erkrankungen: "Sonstige Erkrankungen",
-  regelmaessige_medikamente: "Medikamente",
-  op_letzte_12_monate: "OP in den letzten 12 Monaten",
-};
-/** Detailfrage → Ja/Nein-Frage davor */
-const DETAIL_ZU: Readonly<Record<string, string>> = {
-  herz_kreislauf_details: "herz_kreislauf",
-  venenerkrankung_details: "venenerkrankung",
-  atemwegs_details: "atemwegs_erkrankung",
-  stoffwechsel_details: "stoffwechsel_erkrankung",
-  orthopaedische_details: "orthopaedische_beschwerden",
-  medikamente_details: "regelmaessige_medikamente",
+const ANHANG_TEXT: Record<CheckupAnhang, string> = {
+  pdf: "Im Anhang: derselbe Check-up als PDF für die Ablage.",
+  fehlt: "Hinweis: Das PDF konnte nicht erstellt werden. Alle Angaben stehen vollständig in dieser Mail.",
 };
 
 const zeile = (frage: string, antwort: string) =>
   /[?:]$/.test(frage) ? `${frage} ${antwort}` : `${frage}: ${antwort}`;
-
-const alsText = (wert: unknown) => (typeof wert === "string" ? wert : (wert as readonly string[]).join(", "));
-
-/** Ja bei Einfachauswahl, bei Mehrfachauswahl alles außer „Nein“ und „Keine Angabe“ */
-function auffaellig(wert: unknown): boolean {
-  if (typeof wert === "string") return wert === "Ja";
-  return Array.isArray(wert) && wert.some((w) => w !== "Nein" && w !== KEINE_ANGABE);
-}
-
-function zeilenFuer(daten: CheckupDaten, id: SchrittId): MailZeile[] {
-  const schritt = SCHRITT[id];
-  if (schritt.typ === "gewicht") {
-    return schritt.felder.map((f) => ({ label: f.label, wert: ZAHL.format(daten.antworten[f.key] as number) }));
-  }
-  const wert = daten.antworten[schritt.key];
-  return [
-    {
-      label: schritt.mailTitel ?? schritt.titel,
-      wert: alsText(wert),
-      detail: schritt.detail,
-      // Detailfragen gehören zum „Ja“ davor, auch mit „Keine Angabe“
-      markiert: GESUNDHEIT.has(id) && (schritt.detail || auffaellig(wert)),
-    },
-  ];
-}
 
 function antwortZeilen(daten: CheckupDaten): string[] {
   return daten.pfad.flatMap((id) =>
@@ -91,49 +39,7 @@ function antwortZeilen(daten: CheckupDaten): string[] {
   );
 }
 
-/** „Herz-Kreislauf: Bluthochdruck, KHK“ – je auffälliger Gesundheitsfrage ein Eintrag */
-function gesundheitHinweise({ antworten, pfad }: CheckupDaten): string[] {
-  const hinweise = new Map<string, string>();
-  for (const id of pfad) {
-    if (!GESUNDHEIT.has(id)) continue;
-    const schritt = SCHRITT[id];
-    if (schritt.typ === "gewicht") continue;
-    const wert = antworten[schritt.key];
-    const basis = DETAIL_ZU[schritt.key];
-    if (basis) {
-      if (hinweise.has(basis) && auffaellig(wert)) hinweise.set(basis, alsText(wert));
-    } else if (auffaellig(wert)) {
-      hinweise.set(schritt.key, typeof wert === "string" ? "Ja" : alsText(wert));
-    }
-  }
-  return [...hinweise].map(([key, text]) => (text === "Ja" ? KURZ[key] : `${KURZ[key]}: ${text}`));
-}
-
-function aufEinenBlick(daten: CheckupDaten): MailZeile[] {
-  const a = daten.antworten;
-  const blick: MailZeile[] = [];
-  const fokus = [a.muskeln_fokus, a.cardio_fokus, a.gesundheit_fokus].find((w) => typeof w === "string");
-  if (typeof a.trainingsziele === "string") {
-    blick.push({ label: "Ziel", wert: [a.trainingsziele, fokus].filter(Boolean).join(" – ") });
-  }
-  if (typeof a.problemzonen === "string") blick.push({ label: "Problemzone", wert: a.problemzonen });
-  if (typeof a.aktuelles_gewicht === "number" && typeof a.wunschgewicht === "number") {
-    const diff = Math.round((a.wunschgewicht - a.aktuelles_gewicht) * 10) / 10;
-    const vorzeichen = diff > 0 ? "+" : diff < 0 ? "−" : "±";
-    blick.push({
-      label: "Gewicht",
-      wert: `${ZAHL.format(a.aktuelles_gewicht)} kg → ${ZAHL.format(a.wunschgewicht)} kg (${vorzeichen}${ZAHL.format(Math.abs(diff))} kg)`,
-    });
-  }
-  if (typeof a.trainingsfrequenz === "string") blick.push({ label: "Möchte trainieren", wert: a.trainingsfrequenz });
-  if (typeof a.fitnessstudio_erfahrung === "string") {
-    const art = Array.isArray(a.training_art) && !a.training_art.includes(KEINE_ANGABE) ? ` (${alsText(a.training_art)})` : "";
-    blick.push({ label: "Studio-Erfahrung", wert: `${a.fitnessstudio_erfahrung}${a.fitnessstudio_erfahrung === "Ja" ? art : ""}` });
-  }
-  return blick;
-}
-
-function checkupHtml(daten: CheckupDaten, eingang: string): string {
+function checkupHtml(daten: CheckupDaten, eingang: string, anhang: CheckupAnhang): string {
   const { name, email, telefon } = daten.kontakt;
   const tel = telHref(telefon);
   // kein mailto mit angehängten Parametern (?bcc=…) aus dem Formular
@@ -155,10 +61,9 @@ function checkupHtml(daten: CheckupDaten, eingang: string): string {
       )
     : kasten("<strong>Gesundheit:</strong> keine Erkrankungen, Medikamente oder OPs angegeben.", "gut");
 
-  const bereiche = BEREICHE.map(({ titel, ids }) => {
-    const zeilen = daten.pfad.filter((id) => ids.includes(id)).flatMap((id) => zeilenFuer(daten, id));
-    return zeilen.length ? abschnittTitel(titel) + zeilenTabelle(zeilen) : "";
-  }).join("");
+  const antworten = bereiche(daten)
+    .map(({ titel, zeilen }) => abschnittTitel(titel) + zeilenTabelle(zeilen))
+    .join("");
 
   const einwilligung = kasten(
     `<strong>Beim Absenden angekreuzt</strong> (Text-Stand ${esc(EINWILLIGUNG_STAND)})<br>` +
@@ -171,11 +76,12 @@ function checkupHtml(daten: CheckupDaten, eingang: string): string {
     vorschau: `Check-up von ${name}, Eingang ${eingang} Uhr`,
     inhalt:
       karte +
+      `<p style="margin:12px 0 0;font-family:${MAIL_SCHRIFT};font-size:13px;line-height:1.4;color:${anhang === "pdf" ? MAIL_FARBEN.grau : MAIL_FARBEN.braun};">📎 ${esc(ANHANG_TEXT[anhang])}</p>` +
       abschnittTitel("Auf einen Blick") +
       zeilenTabelle(aufEinenBlick(daten)) +
       `<div style="height:12px;"></div>` +
       gesundheit +
-      bereiche +
+      antworten +
       abschnittTitel("Einwilligung") +
       einwilligung,
     fuss:
@@ -184,7 +90,11 @@ function checkupHtml(daten: CheckupDaten, eingang: string): string {
   });
 }
 
-export function checkupMail(daten: CheckupDaten, eingang: Date): { betreff: string; text: string; html: string } {
+export function checkupMail(
+  daten: CheckupDaten,
+  eingang: Date,
+  anhang: CheckupAnhang = "pdf",
+): { betreff: string; text: string; html: string } {
   const { name, email, telefon } = daten.kontakt;
   const zeit = DATUM.format(eingang);
   const text = [
@@ -195,6 +105,8 @@ export function checkupMail(daten: CheckupDaten, eingang: Date): { betreff: stri
     `Name: ${name}`,
     `E-Mail: ${email}`,
     `Telefon: ${telefon}`,
+    "",
+    ANHANG_TEXT[anhang],
     "",
     // Häkchen 1 ist eine Kenntnisnahme, keine Einwilligung (DSE: übrige Angaben nach lit. b)
     `BESTÄTIGUNG UND EINWILLIGUNG (beim Absenden angekreuzt, Text-Stand ${EINWILLIGUNG_STAND})`,
@@ -209,5 +121,5 @@ export function checkupMail(daten: CheckupDaten, eingang: Date): { betreff: stri
     "nicht weiterleiten und nach der Bearbeitung löschen. „Antworten“ schreibt direkt an die Person.",
   ].join("\n");
   // Betreff ohne Gesundheitsdaten
-  return { betreff: `Neuer Check-up über die Website – ${name}`, text, html: checkupHtml(daten, zeit) };
+  return { betreff: `Neuer Check-up über die Website – ${name}`, text, html: checkupHtml(daten, zeit, anhang) };
 }

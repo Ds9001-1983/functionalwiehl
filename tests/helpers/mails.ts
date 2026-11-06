@@ -32,3 +32,29 @@ export async function erwarteTestMail(request: APIRequestContext, filter: MailFi
     .toBe(1);
   return treffer[0];
 }
+
+export type PdfInhalt = {
+  seiten: number;
+  /** Text aller Seiten, Leerraum zu einem Leerzeichen zusammengefasst */
+  text: string;
+  titel: string;
+  autor: string;
+  bytes: Uint8Array;
+};
+
+/** Liest einen PDF-Anhang der Testsenke (Base64) mit pdf.js (unpdf) aus. */
+export async function liesPdf(anhang: TestMail["anhaenge"][number]): Promise<PdfInhalt> {
+  const { extractText, getDocumentProxy } = await import("unpdf");
+  const bytes = new Uint8Array(Buffer.from(anhang.base64, "base64"));
+  // pdf.js übernimmt den Puffer, deshalb eine Kopie übergeben
+  const pdf = await getDocumentProxy(bytes.slice());
+  const { totalPages, text } = await extractText(pdf, { mergePages: true });
+  const { info } = (await pdf.getMetadata()) as { info: { Title?: string; Author?: string } };
+  return {
+    seiten: totalPages,
+    text: text.replace(/\s+/g, " "),
+    titel: info.Title ?? "",
+    autor: info.Author ?? "",
+    bytes,
+  };
+}

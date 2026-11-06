@@ -30,7 +30,7 @@ Turbopack), Tailwind 4 und shadcn/base-ui. Löst das WordPress/Divi bei Alfahost
 
 | Methode und Pfad | Zweck |
 |---|---|
-| `POST /api/checkup/` | Check-up → Mail (HTML und Text) an `FORM_TO` (Prüfung, Rate-Limit, Honeypot `fw_hp`) |
+| `POST /api/checkup/` | Check-up → Mail (HTML und Text, dazu PDF-Anhang) an `FORM_TO` (Prüfung, Rate-Limit, Honeypot `fw_hp`) |
 | `POST /api/koerpermasse/` | Körpermaße → Mail (HTML und Text) an `FORM_TO` |
 | `POST /wp-json/sb-bn/v1/click` | Klickspeicher: Beacon der LP (Code, fbc, fbp, URL, CTA, Einwilligung; IP und UA ergänzt der Server) |
 | `GET /wp-json/sb-bn/v1/click/{code}` | Klickspeicher: Abruf durch n8n (Basic Auth), Antworten byte-genau wie WordPress |
@@ -83,7 +83,11 @@ Turbopack), Tailwind 4 und shadcn/base-ui. Löst das WordPress/Divi bei Alfahost
 Check-up und Körpermaße gehen als Mail mit HTML- und Text-Fassung über Alfahosting-SMTP (Postfach
 gym@) an `FORM_TO` (`lib/mailer.ts`, nodemailer; Gestaltung in `lib/mail-html.ts`, ohne Bilder und
 externe Inhalte). Der Check-up ist ein Klick-Funnel: Eine Einfachauswahl springt beim Klick weiter,
-Mehrfachauswahl und Gewicht brauchen „Weiter“. Die Website speichert nichts; Gesundheitsdaten werden
+Mehrfachauswahl und Gewicht brauchen „Weiter“. Seit 06.11.2026 hängt am Check-up dieselbe Auswertung
+als PDF (`lib/forms/checkup-pdf.ts`, pdf-lib mit Open Sans aus `lib/forms/schrift/`), damit das Studio
+den Datensatz in einem anderen System ablegen kann; scheitert das PDF, geht die Mail ohne Anhang und
+mit Hinweis raus. Mail und PDF bauen auf `lib/forms/checkup-bericht.ts` auf. Die Website speichert
+nichts; Gesundheitsdaten werden
 nie geloggt, nur feste Codes wie `[form:checkup] versand`. Beide Formulare haben eine eigene
 Art.-9-Einwilligung, Erfolg meldet der Client nur bei HTTP 200.
 

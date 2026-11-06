@@ -44,6 +44,11 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  // Schriften für das Check-up-PDF (lib/forms/checkup-pdf.ts liest sie zur Laufzeit per fs).
+  // Schlüssel = Routenpfad ohne Slash, Doku 05-config/01-next-config-js/output.md
+  outputFileTracingIncludes: {
+    "/api/checkup": ["./lib/forms/schrift/*.ttf"],
+  },
   async redirects() {
     return REDIRECTS.map((r) => ({ ...r, permanent: true }));
   },

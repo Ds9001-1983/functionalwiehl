@@ -1,12 +1,16 @@
 import { pruefeCheckup } from "@/content/checkup-fragen";
 import { checkupMail } from "@/lib/forms/checkup-mail";
-import { MailNichtKonfiguriertError, empfaenger, mailFehlerCode, sendeMail } from "@/lib/mailer";
+import { checkupPdf, checkupPdfDateiname } from "@/lib/forms/checkup-pdf";
+import { MailNichtKonfiguriertError, empfaenger, mailFehlerCode, sendeMail, type MailAnhang } from "@/lib/mailer";
 import { clientIp, gleicherOrigin, ipSchluessel } from "@/lib/request";
 import { upstashAusEnv } from "@/lib/upstash-rest";
 
 /**
  * Empfängt den Fitness- & Gesundheits-Check-up und schickt ihn als Mail (Text und HTML,
  * lib/forms/checkup-mail.ts) an FORM_TO (gym@, Alfahosting-SMTP über lib/mailer.ts).
+ * Dieselben Angaben hängen als PDF an (lib/forms/checkup-pdf.ts), damit das Team den Check-up
+ * in einem anderen System ablegen kann. Scheitert das PDF, geht die Mail ohne Anhang und mit
+ * Hinweis raus (Log nur `[form:checkup] pdf <Code>`), der Check-up geht nie verloren.
  *
  * Vertrag (design-review (a)-16): POST /api/checkup/ mit CheckupPayload
  *   { antworten, pfad, kontakt:{name,email,telefon}, einwilligungDatenschutz, einwilligungGesundheit, fw_hp, dauerMs }
@@ -110,6 +114,13 @@ async function begrenzeRate(headers: Headers): Promise<{ erlaubt: boolean; restS
   return { erlaubt: stand.anzahl <= maximum, restS: stand.restS };
 }
 
+/** Nur Code oder Fehlerklasse (z. B. "ENOENT"), nie die Meldung – sie könnte Inhalte enthalten */
+function pdfFehlerCode(err: unknown): string {
+  const code = (err as { code?: unknown } | null)?.code;
+  if (typeof code === "string" && /^[A-Z0-9_]{2,32}$/.test(code)) return code;
+  return err instanceof Error && /^[A-Za-z]{2,40}$/.test(err.name) ? err.name : "unbekannt";
+}
+
 // ---- Route ----
 
 export async function POST(request: Request) {
@@ -149,9 +160,21 @@ export async function POST(request: Request) {
     return antwort(422, "validierung");
   }
 
+  const eingang = new Date();
+  const anhaenge: MailAnhang[] = [];
   try {
-    const mail = checkupMail(pruefung.daten, new Date());
-    await sendeMail({ an: empfaenger("FORM_TO"), ...mail, antwortAn: pruefung.daten.kontakt.email });
+    anhaenge.push({
+      dateiname: checkupPdfDateiname(pruefung.daten.kontakt.name, eingang),
+      inhalt: await checkupPdf(pruefung.daten, eingang),
+      typ: "application/pdf",
+    });
+  } catch (err) {
+    console.error("[form:checkup] pdf", pdfFehlerCode(err));
+  }
+
+  try {
+    const mail = checkupMail(pruefung.daten, eingang, anhaenge.length ? "pdf" : "fehlt");
+    await sendeMail({ an: empfaenger("FORM_TO"), ...mail, antwortAn: pruefung.daten.kontakt.email, anhaenge });
   } catch (err) {
     console.error("[form:checkup] versand", mailFehlerCode(err));
     return err instanceof MailNichtKonfiguriertError

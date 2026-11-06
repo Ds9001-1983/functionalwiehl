@@ -7,7 +7,8 @@ import type { Mail as Transporter } from "nodemailer";
  * - Env erst beim Aufruf: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM;
  *   Empfänger über empfaenger("FORM_TO" | "ALERT_TO").
  * - Text-Mails, auf Wunsch zusätzlich als HTML (lib/mail-html.ts, ohne Bilder und externe
- *   Inhalte), nodemailer ohne Datei- und URL-Zugriff, TLS ≥ 1.2,
+ *   Inhalte) und mit Anhängen aus dem Speicher (z. B. Check-up-PDF), nodemailer ohne Datei-
+ *   und URL-Zugriff, TLS ≥ 1.2,
  *   Port 465 = implizites TLS, sonst STARTTLS Pflicht. Die TLS-Prüfung nie abschalten.
  * - Fehlt etwas → MailNichtKonfiguriertError. KEIN „nur loggen“-Fallback: Die Formulare
  *   enthalten Gesundheitsdaten (Art. 9 DSGVO) – nie Inhalte loggen, nur mailFehlerCode().
@@ -26,6 +27,16 @@ export type MailAuftrag = {
   html?: string;
   /** Reply-To, z. B. die E-Mail der Person aus dem Formular */
   antwortAn?: string;
+  /** Anhänge, nur aus dem Speicher (nodemailer darf keine Dateien oder URLs lesen) */
+  anhaenge?: readonly MailAnhang[];
+};
+
+export type MailAnhang = {
+  /** Dateiname beim Empfänger, z. B. „Check-up_Erika-Muster_2026-11-06_0930.pdf“ */
+  dateiname: string;
+  inhalt: Uint8Array;
+  /** MIME-Typ, z. B. „application/pdf“ */
+  typ: string;
 };
 
 /** Eintrag der Testsenke (nur MAIL_TRANSPORT=json) */
@@ -37,6 +48,8 @@ export type TestMail = {
   betreff: string;
   text: string;
   html: string | null;
+  /** Anhänge mit Inhalt als Base64 */
+  anhaenge: { dateiname: string; typ: string; groesse: number; base64: string }[];
 };
 
 export class MailNichtKonfiguriertError extends Error {
@@ -117,6 +130,11 @@ export async function sendeMail(mail: MailAuftrag): Promise<void> {
   if (!mail.an.trim()) throw new MailNichtKonfiguriertError("Empfänger fehlt");
   // Header-Injection: Zeilenumbrüche im Betreff entfernen
   const betreff = mail.betreff.replace(/[\r\n]+/g, " ").trim();
+  const attachments = mail.anhaenge?.map((a) => ({
+    filename: a.dateiname.replace(/[\r\n]+/g, " "),
+    content: Buffer.from(a.inhalt),
+    contentType: a.typ,
+  }));
 
   if (process.env.MAIL_TRANSPORT === "json") {
     if (!testTransportAktiv()) throw new MailNichtKonfiguriertError("MAIL_TRANSPORT=json ist auf Vercel gesperrt");
@@ -129,8 +147,14 @@ export async function sendeMail(mail: MailAuftrag): Promise<void> {
       subject: betreff,
       text: mail.text,
       html: mail.html,
+      attachments,
     });
-    const nachricht = JSON.parse(info.message) as { subject?: string; text?: string; html?: string };
+    const nachricht = JSON.parse(info.message) as {
+      subject?: string;
+      text?: string;
+      html?: string;
+      attachments?: { filename?: string; contentType?: string; content?: string }[];
+    };
     const senke = testSenke();
     senke.push({
       zeit: new Date().toISOString(),
@@ -140,6 +164,12 @@ export async function sendeMail(mail: MailAuftrag): Promise<void> {
       betreff: nachricht.subject ?? "",
       text: nachricht.text ?? "",
       html: nachricht.html ?? null,
+      anhaenge: (nachricht.attachments ?? []).map((a) => ({
+        dateiname: a.filename ?? "",
+        typ: a.contentType ?? "",
+        groesse: Buffer.from(a.content ?? "", "base64").byteLength,
+        base64: a.content ?? "",
+      })),
     });
     if (senke.length > SENKE_MAX) senke.splice(0, senke.length - SENKE_MAX);
     return;
@@ -154,5 +184,6 @@ export async function sendeMail(mail: MailAuftrag): Promise<void> {
     subject: betreff,
     text: mail.text,
     html: mail.html,
+    attachments,
   });
 }
